@@ -20,7 +20,8 @@
 - 邮箱验证码验证（60秒发送限制）
 - 密码重置功能
 
-![用户注册登录界面](./images/user-login.png)
+![用户注册登录界面](<img width="720" alt="image" src="https://github.com/user-attachments/assets/338cca31-dfdc-432d-a8dc-be6d7e399816" />
+)
 
 #### 1.2 包场功能
 - 包场申请：选择日期、时间段
@@ -29,8 +30,14 @@
 - 包场期间免费入场
 - 包场缓冲时间：5分钟免费出场
 
-![包场申请界面](./images/booking-apply.png)
-![包场邀请界面](./images/booking-invite.png)
+![包场申请界面](<img width="720" alt="image" src="https://github.com/user-attachments/assets/24d05aa2-655d-4ba9-9ca0-2257c4796d54" />
+)
+![包场中界面1](<img width="720" alt="image" src="https://github.com/user-attachments/assets/c3cdf03d-5eed-4d6f-ad35-5df77b36c0ac" />
+)
+![包场中界面2](<img width="720" alt="image" src="https://github.com/user-attachments/assets/c3cdf03d-5eed-4d6f-ad35-5df77b36c0ac" />
+)
+![包场中界面3](<img width="720" alt="image" src="https://github.com/user-attachments/assets/c3cdf03d-5eed-4d6f-ad35-5df77b36c0ac" />
+)
 
 #### 1.3 时长卡购买
 - 多种时长套餐可选
