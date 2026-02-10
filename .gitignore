@@ -1,0 +1,25 @@
+# 配置文件（包含敏感信息，不应提交到版本控制）
+config.php
+
+# 日志文件
+*.log
+
+# 临时文件
+*.tmp
+*.bak
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE 文件
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 上传的文件目录（如果后续有）
+uploads/
+storage/

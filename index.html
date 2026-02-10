@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>场地计费管理系统 - 首页</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/style.css">
+    <link id="favicon" rel="icon" type="image/x-icon" href="">
+</head>
+
+<body>
+    <div class="app-container"
+        style="max-width: 480px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;">
+        <div class="login-header">
+            <h1 id="systemTitle">场地计费系统</h1>
+            <p>专业的自动化场地运营管理方案</p>
+        </div>
+
+        <!-- 轮播图与公告卡片 -->
+        <div class="card" id="homeInfoCard">
+            <div class="card-header">系统公告 & 轮播图</div>
+            <div class="carousel" id="homeCarousel">
+                <div class="carousel-inner" id="bannerContainer"></div>
+                <div class="carousel-dots" id="carouselDots"></div>
+                <div class="carousel-arrow arrow-left" id="arrowLeft">&lt;</div>
+                <div class="carousel-arrow arrow-right" id="arrowRight">&gt;</div>
+            </div>
+            <ul class="notice-list" id="noticeList"></ul>
+        </div>
+
+        <div class="card" id="billingRulesCard">
+            <div class="card-header">计费规则</div>
+            <div id="billingRules" style="padding: 12px;">
+                加载中...
+            </div>
+        </div>
+
+        <!-- 登录面板 -->
+        <div class="card" id="loginCard">
+            <div class="card-header">用户登录</div>
+            <div class="form-group">
+                <label>手机号 / 账号</label>
+                <input type="text" id="loginMobile" placeholder="请输入您的手机号">
+            </div>
+            <div class="form-group">
+                <label>登录密码</label>
+                <input type="password" id="loginPwd" placeholder="请输入 6 位密码" maxlength="16">
+            </div>
+            <div style="margin-top: 24px;">
+                <button class="btn btn-primary btn-full" id="btnLogin">确认登录</button>
+            </div>
+            <div style="margin-top: 16px; display: flex; justify-content: space-between; font-size: 14px;">
+                <a href="javascript:;" onclick="switchToMode('register')"
+                    style="color: var(--n-primary); text-decoration: none;">注册账号</a>
+                <a href="javascript:;" onclick="switchToMode('reset')"
+                    style="color: var(--n-text-3); text-decoration: none;">忘记密码？</a>
+            </div>
+        </div>
+
+        <!-- 注册面板 -->
+        <div class="card" id="registerCard" style="display: none;">
+            <div class="card-header">新用户注册</div>
+            <div class="form-group">
+                <label>常用 QQ (同步头像)</label>
+                <input type="text" id="regQq" placeholder="请输入 QQ 号">
+            </div>
+            <div class="form-group">
+                <label>手机号码 (登录账号)</label>
+                <input type="text" id="regMobile" placeholder="请输入手机号">
+            </div>
+            <div class="form-group">
+                <label>QQ验证码</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="regCode" placeholder="请输入验证码" style="flex: 1;">
+                    <button class="btn btn-secondary" id="btnSendRegCode" type="button">发送验证码到QQ邮箱</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>设置密码</label>
+                <input type="password" id="regPwd" placeholder="不少于 6 位">
+            </div>
+            <div class="form-group">
+                <label>确认密码</label>
+                <input type="password" id="regPwd2" placeholder="请再次输入密码">
+            </div>
+            <div style="margin-top: 24px;">
+                <button class="btn btn-primary btn-full" id="btnRegister">立即注册</button>
+            </div>
+            <div style="margin-top: 16px; text-align: center;">
+                <a href="javascript:;" onclick="switchToMode('login')"
+                    style="color: var(--n-text-2); text-decoration: none; font-size: 14px;">已有账号？返回登录</a>
+            </div>
+        </div>
+
+        <!-- 找回密码面板 -->
+        <div class="card" id="resetCard" style="display: none;">
+            <div class="card-header">找回密码</div>
+            <div class="form-group">
+                <label>QQ号</label>
+                <input type="text" id="resetQq" placeholder="请输入QQ号">
+            </div>
+            <div class="form-group">
+                <label>验证码</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="resetCode" placeholder="请输入验证码" style="flex: 1;">
+                    <button class="btn btn-secondary" id="btnSendResetCode" type="button">发送验证码</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>新密码</label>
+                <input type="password" id="resetNewPwd" placeholder="设置新的 6 位密码">
+            </div>
+            <div style="margin-top: 24px;">
+                <button class="btn btn-primary btn-full" id="btnReset">确认重置</button>
+            </div>
+            <div style="margin-top: 16px; text-align: center;">
+                <a href="javascript:;" onclick="switchToMode('login')"
+                    style="color: var(--n-text-2); text-decoration: none; font-size: 14px;">返回登录</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 模板 -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="margin-bottom: 12px; font-weight: 500;"></h3>
+            <div id="modalBody" style="margin-bottom: 24px; color: var(--n-text-2); font-size: 14px; line-height: 1.6;">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="modalCancel" class="btn">取消</button>
+                <button id="modalConfirm" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/api.js"></script>
+    <script>
+        function switchToMode(mode) {
+            document.getElementById('loginCard').style.display = mode === 'login' ? '' : 'none';
+            document.getElementById('registerCard').style.display = mode === 'register' ? '' : 'none';
+            document.getElementById('resetCard').style.display = mode === 'reset' ? '' : 'none';
+            document.getElementById('homeInfoCard').style.display = mode === 'login' ? '' : 'none';
+        }
+
+        document.getElementById('btnLogin').onclick = async function () {
+            const mobile = document.getElementById('loginMobile').value.trim();
+            const password = document.getElementById('loginPwd').value.trim();
+            try {
+                if (!mobile || !password) {
+                    showModal({ title: '提示', content: '请输入账号和密码', showCancel: false });
+                    return;
+                }
+                await apiRequest('auth', 'login', 'POST', { mobile, password });
+                await showModal({ title: '成功', content: '登录成功，正在进入个人中心...', showCancel: false });
+                window.location.href = 'user.html';
+            } catch (e) {
+                showModal({ title: '登录失败', content: e.message, showCancel: false });
+            }
+        };
+
+        document.getElementById('btnRegister').onclick = async function () {
+            const qq = document.getElementById('regQq').value.trim();
+            const mobile = document.getElementById('regMobile').value.trim();
+            const code = document.getElementById('regCode').value.trim();
+            const password = document.getElementById('regPwd').value.trim();
+            const password2 = document.getElementById('regPwd2').value.trim();
+            try {
+                if (!qq || !mobile || !code || !password || !password2) {
+                    showModal({ title: '提示', content: '请填写完整注册信息', showCancel: false });
+                    return;
+                }
+                if (password !== password2) {
+                    showModal({ title: '错误', content: '两次密码输入不一致', showCancel: false });
+                    return;
+                }
+                await apiRequest('auth', 'register', 'POST', {
+                    qq, mobile, password, confirm_password: password2, code
+                });
+                await showModal({ title: '注册成功', content: '欢迎加入！现在您可以去登录了。', showCancel: false });
+                switchToMode('login');
+            } catch (e) {
+                showModal({ title: '注册失败', content: e.message, showCancel: false });
+            }
+        };
+
+        // 发送注册验证码
+        document.getElementById('btnSendRegCode').onclick = async function () {
+            const qq = document.getElementById('regQq').value.trim();
+            if (!qq) {
+                showModal({ title: '提示', content: '请先输入QQ号', showCancel: false });
+                return;
+            }
+            try {
+                await apiRequest('auth', 'send_code', 'POST', { qq, type: 'register' });
+                showModal({ title: '成功', content: '验证码已发送到您的QQ邮箱', showCancel: false });
+            } catch (e) {
+                showModal({ title: '发送失败', content: e.message, showCancel: false });
+            }
+        };
+
+        document.getElementById('btnReset').onclick = async function () {
+            const qq = document.getElementById('resetQq').value.trim();
+            const code = document.getElementById('resetCode').value.trim();
+            const new_password = document.getElementById('resetNewPwd').value.trim();
+            try {
+                await apiRequest('auth', 'reset_password', 'POST', { qq, code, new_password });
+                await showModal({ title: '重置成功', content: '新密码已设置，请重新登录', showCancel: false });
+                switchToMode('login');
+            } catch (e) { showModal({ title: '重置失败', content: e.message, showCancel: false }); }
+        };
+
+        // 发送重置密码验证码
+        document.getElementById('btnSendResetCode').onclick = async function () {
+            const qq = document.getElementById('resetQq').value.trim();
+            if (!qq) {
+                showModal({ title: '提示', content: '请先输入QQ号', showCancel: false });
+                return;
+            }
+            try {
+                await apiRequest('auth', 'send_code', 'POST', { qq, type: 'reset' });
+                showModal({ title: '成功', content: '验证码已发送到您的QQ邮箱', showCancel: false });
+            } catch (e) {
+                showModal({ title: '发送失败', content: e.message, showCancel: false });
+            }
+        };
+
+        function showModal({ title, content, showCancel = true }) {
+            const overlay = document.getElementById('modalOverlay');
+            document.getElementById('modalTitle').textContent = title || '提示';
+            document.getElementById('modalBody').innerHTML = content;
+            const cancelBtn = document.getElementById('modalCancel');
+            cancelBtn.style.display = showCancel ? '' : 'none';
+            overlay.style.display = 'flex';
+
+            return new Promise((resolve) => {
+                document.getElementById('modalConfirm').onclick = () => { overlay.style.display = 'none'; resolve(true); };
+                cancelBtn.onclick = () => { overlay.style.display = 'none'; resolve(false); };
+            });
+        }
+
+        let carouselIndex = 0;
+        let banners = [];
+
+        function setupCarousel(data) {
+            banners = data || [];
+            const container = document.getElementById('bannerContainer');
+            const dotsBox = document.getElementById('carouselDots');
+            container.innerHTML = '';
+            dotsBox.innerHTML = '';
+
+            if (banners.length === 0) {
+                document.getElementById('homeCarousel').style.display = 'none';
+                return;
+            }
+
+            banners.forEach((b, i) => {
+                const item = document.createElement('div');
+                item.className = 'carousel-item';
+                item.innerHTML = `<img src="${b.image_url}" alt="${b.title}" onclick="${b.link_url ? `window.open('${b.link_url}', '_blank')` : ''}">`;
+                container.appendChild(item);
+
+                const dot = document.createElement('div');
+                dot.className = 'dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => goToSlide(i);
+                dotsBox.appendChild(dot);
+            });
+        }
+
+        function goToSlide(index) {
+            if (!banners.length) return;
+            carouselIndex = (index + banners.length) % banners.length;
+            document.getElementById('bannerContainer').style.transform = `translateX(-${carouselIndex * 100}%)`;
+            document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === carouselIndex));
+        }
+
+        document.getElementById('arrowLeft').onclick = () => goToSlide(carouselIndex - 1);
+        document.getElementById('arrowRight').onclick = () => goToSlide(carouselIndex + 1);
+        setInterval(() => goToSlide(carouselIndex + 1), 5000);
+
+        async function loadHome() {
+            try {
+                const data = await apiRequest('config', 'public', 'GET');
+
+                // 动态系统名称渲染
+                if (data.system_name) {
+                    document.title = data.system_name + ' - 首页';
+                    const titleEl = document.getElementById('systemTitle');
+                    if (titleEl) titleEl.textContent = data.system_name;
+                }
+
+                // 应用favicon
+                const faviconUrl = data.configs?.login_favicon;
+                if (faviconUrl) {
+                    document.getElementById('favicon').href = faviconUrl;
+                }
+
+                // 显示计费规则
+                const billingMinutes = data.configs?.billing_minutes || 60;
+                const billingAmount = data.configs?.billing_amount || 0;
+                const freeMinutes = data.configs?.free_minutes || 5;
+                
+                let billingText = '';
+                if (billingAmount > 0) {
+                    billingText = `<div><strong>计费规则：</strong>${billingMinutes}分钟内收费${billingAmount}元</div>`;
+                    billingText += `<div><strong>免费阈值：</strong>进场${freeMinutes}分钟内退场不计费</div>`;
+                } else {
+                    billingText = `<div><strong>计费规则：</strong>按分钟计费，1分钟1元</div>`;
+                    billingText += `<div><strong>免费阈值：</strong>进场${freeMinutes}分钟内退场不计费</div>`;
+                }
+                
+                const billingRulesEl = document.getElementById('billingRules');
+                if (billingRulesEl) {
+                    billingRulesEl.innerHTML = billingText;
+                }
+
+                setupCarousel(data.banners);
+
+                const noticeBox = document.getElementById('noticeList');
+                noticeBox.innerHTML = '';
+                (data.announcements || []).forEach(a => {
+                    const li = document.createElement('li');
+                    li.className = 'notice-item';
+                    li.innerHTML = `<span class="notice-title" onclick="showModal({title:'${a.title}',content:'${a.content.replace(/\n/g, '<br>')}',showCancel:false})">${a.title}</span>`;
+                    noticeBox.appendChild(li);
+                });
+            } catch (e) { console.error('加载首页数据失败', e); }
+        }
+
+        loadHome();
+    </script>
+</body>
+
+</html>

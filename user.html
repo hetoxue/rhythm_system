@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title id="pageTitle">用户中心</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/style.css">
+    <link id="favicon" rel="icon" type="image/x-icon" href="">
+    <style>
+        /* 局部样式补充 */
+        .page-header {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--n-text-1);
+        }
+
+        .dashboard-welcome {
+            background: linear-gradient(135deg, #e3f9e5 0%, #f0fdf4 100%);
+            padding: 24px;
+            border-radius: var(--n-radius);
+            border: 1px solid #b7eb8f;
+            margin-bottom: 24px;
+            color: #2da44e;
+        }
+
+        /* 日期选择器样式 */
+        .date-picker-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .date-input {
+            flex: 1;
+            padding: 10px 12px;
+            padding-left: 40px;
+            border: 1px solid var(--n-border);
+            border-radius: var(--n-radius);
+            font-size: 14px;
+            color: var(--n-text-1);
+            background: var(--n-bg);
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: var(--n-primary);
+            box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            display: none;
+        }
+
+        .calendar-icon {
+            position: absolute;
+            left: 12px;
+            color: var(--n-text-2);
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .date-input:focus + .calendar-icon {
+            color: var(--n-primary);
+        }
+
+        /* 针对小屏幕优化 */
+        @media (max-width: 640px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 移动端遮罩与切换按钮 -->
+    <div class="mobile-toggle" id="btnMobileToggle">
+        <span>☰</span>
+    </div>
+    <div class="mobile-mask" id="mobileMask"></div>
+
+    <div class="layout-container">
+
+        <!-- 侧边栏 Sider -->
+        <div class="layout-sider" id="layoutSider">
+            <div class="sider-brand">
+                <span>⚡ 计费系统</span>
+            </div>
+
+            <div class="sider-user" id="siderUserProfile">
+                <img src="https://q1.qlogo.cn/g?b=qq&nk=0&s=100" class="avatar" id="siderAvatar">
+                <div class="info">
+                    <div class="name" id="siderName">-</div>
+                    <div class="sub" id="siderBalance">￥0.00</div>
+                </div>
+            </div>
+
+            <div class="n-menu">
+                <div class="n-menu-item active" data-tab="tab-dashboard">
+                    <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18"/>
+                        <path d="M18 17V9"/>
+                        <path d="M13 17V5"/>
+                        <path d="M8 17v-3"/>
+                    </svg>
+                    控制台
+                </div>
+                <div class="n-menu-item" data-tab="tab-store">
+                    <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                    商品超市
+                </div>
+                <div class="n-menu-item" data-tab="tab-booking">
+                    <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    包场预约
+                </div>
+                <div class="n-menu-item" data-tab="tab-timecard">
+                    <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <path d="M12 8v8"/>
+                        <path d="M8 12h8"/>
+                    </svg>
+                    时长卡
+                </div>
+                <div class="n-menu-item" data-tab="tab-recharge">
+                    <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    余额充值
+                </div>
+                <div class="n-menu-item" data-tab="tab-records">
+                    <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    交易记录
+                </div>
+                <div class="n-menu-item" data-tab="tab-profile">
+                    <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    个人设置
+                </div>
+                <div class="n-menu-item" id="btnLogout" style="margin-top: auto; color: var(--n-danger);">
+                    <svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    退出登录
+                </div>
+            </div>
+        </div>
+
+        <!-- 内容区域 Content -->
+        <div class="layout-content">
+
+            <!-- 控制台 Dashboard -->
+            <div id="tab-dashboard" class="tab-content">
+                <div class="page-header">
+                    <div class="page-title">控制台</div>
+                </div>
+
+                <div class="dashboard-welcome" id="dashWelcomeMsg">
+                    欢迎回来！今天也要开心哦~
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">当前状态</div>
+                        <div class="stat-value" id="dashStatus">检测中...</div>
+                        <div style="margin-top: 8px; font-size: 13px; color: var(--n-text-3);">
+                            入场时间: <span id="dashEnterTime">-</span>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 13px; color: var(--n-text-3);">
+                            入场时长: <span id="dashDuration">-</span>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 13px; color: var(--n-text-3);">
+                            应付金额: <span id="dashAmount">-</span>
+                        </div>
+                        <div style="margin-top: 12px; display: flex; gap: 8px;">
+                            <button class="btn btn-primary btn-sm" id="btnEnter">登记入场</button>
+                            <button class="btn btn-danger btn-sm" id="btnExit">登记出场</button>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">在线人数</div>
+                        <div class="stat-value" id="dashOnlineCount">-</div>
+                        <div style="margin-top: 8px; font-size: 13px; color: var(--n-text-3);">
+                            实时统计
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">包场状态</div>
+                    <div id="bookingStatusContent" style="padding: 12px;">
+                        加载中...
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">计费规则</div>
+                    <div id="billingRulesContent" style="padding: 12px;">
+                        加载中...
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">在线用户</div>
+                    <div id="onlineUsersList" style="padding: 12px;">
+                        <div style="text-align: center; color: var(--n-text-3);">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">最新公告</div>
+                    <ul id="userNoticeList" class="notice-list">
+                        <li>加载中...</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 商品超市 (Store) -->
+            <div id="tab-store" class="tab-content" style="display: none;">
+                <div class="page-header">
+                    <div class="page-title">商品超市</div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadProducts()">刷新</button>
+                </div>
+                <div class="product-grid" id="productGrid">
+                    <!-- 商品卡片渲染区 -->
+                </div>
+                <div id="productMsg" style="margin-top: 20px; color: var(--n-text-3); text-align: center;"></div>
+            </div>
+
+            <!-- 包场预约 -->
+            <div id="tab-booking" class="tab-content" style="display: none;">
+                <div class="page-header">
+                    <div class="page-title">包场预约</div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadMyBookings()">刷新记录</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                    <div class="card">
+                        <div class="card-header">提交申请</div>
+                        <div class="form-group">
+                            <label>日期</label>
+                            <div class="date-picker-wrapper">
+                                <input type="date" id="bkDate" class="date-input">
+                                <svg class="calendar-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>时段</label>
+                            <select id="bkSlot">
+                                <option value="">加载中...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>用途</label>
+                            <textarea id="bkPurpose" rows="2" placeholder="例如：生日聚会"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>邀请名单 (一行一个手机或QQ，无需填写自己，会自动包括发起人)</label>
+                            <textarea id="bkInvited" rows="3"></textarea>
+                        </div>
+                        <button class="btn btn-primary btn-full" id="btnBookingApply">提交申请</button>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <div class="card-header">我的预约</div>
+                            <div id="myBookingList"></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header" style="color: var(--n-warning);">近期已被占用</div>
+                            <div id="publicBookingList" style="font-size: 13px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 时长卡 -->
+            <div id="tab-timecard" class="tab-content" style="display: none;">
+                <div class="page-header">
+                    <div class="page-title">我的时长卡</div>
+                </div>
+                <div id="myCardList" style="margin-bottom: 24px;"></div>
+
+                <div class="page-header">
+                    <div class="page-title">购买套餐</div>
+                </div>
+                <div id="planList" class="product-grid"></div>
+            </div>
+
+            <!-- 余额充值 -->
+            <div id="tab-recharge" class="tab-content" style="display: none;">
+                <div class="page-header">
+                    <div class="page-title">余额充值</div>
+                </div>
+                <div class="card" style="max-width: 500px;">
+                    <div class="form-group">
+                        <label>充值金额 (元)</label>
+                        <input type="number" id="rechargeAmount" placeholder="100">
+                    </div>
+                    <div class="form-group">
+                        <label>支付方式</label>
+                        <select id="rechargeMethod">
+                            <option value="1">微信官方</option>
+                            <option value="2">微信易支付</option>
+                            <option value="3">支付宝官方</option>
+                            <option value="4">支付宝易支付</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-full" id="btnCreateOrder">发起支付</button>
+                </div>
+
+                <div class="card" style="max-width: 500px;">
+                    <div class="card-header">卡密兑换</div>
+                    <div class="form-group">
+                        <label>卡密号码</label>
+                        <input type="text" id="cardNo" placeholder="请输入卡号">
+                    </div>
+                    <button class="btn btn-full" id="btnCardRecharge">兑换余额</button>
+                </div>
+            </div>
+
+            <!-- 记录查询 -->
+            <div id="tab-records" class="tab-content" style="display: none;">
+                <div class="page-header">
+                    <div class="page-title">交易与进出记录</div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadRecords()">刷新</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">消费流水</div>
+                    <div id="consumeRecords"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">进出场记录</div>
+                    <div id="entranceRecords"></div>
+                </div>
+            </div>
+
+            <!-- 个人设置 -->
+            <div id="tab-profile" class="tab-content" style="display: none;">
+                <div class="page-header">
+                    <div class="page-title">账号设置</div>
+                </div>
+                <div class="card" style="max-width: 500px;">
+                    <div class="form-group">
+                        <label>绑定QQ</label>
+                        <input type="text" id="profQq">
+                    </div>
+                    <button class="btn btn-primary" id="btnUpdateProfile">保存资料</button>
+
+                    <hr>
+
+                    <div class="form-group">
+                        <label>旧密码</label>
+                        <input type="password" id="profOldPwd">
+                    </div>
+                    <div class="form-group">
+                        <label>新密码</label>
+                        <input type="password" id="profNewPwd">
+                    </div>
+                    <div class="form-group">
+                        <label>确认新密码</label>
+                        <input type="password" id="profNewPwd2">
+                    </div>
+                    <button class="btn btn-danger" id="btnChangePwd">修改密码</button>
+                </div>
+            </div>
+
+        </div> <!-- End Content -->
+    </div> <!-- End Layout -->
+
+    <!-- 通用模态框 -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="margin-bottom: 12px; font-weight: 500;">提示</h3>
+            <div id="modalBody" style="margin-bottom: 24px; color: var(--n-text-2); font-size: 14px; line-height: 1.6;">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="modalCancel" class="btn">取消</button>
+                <button id="modalConfirm" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/api.js"></script>
+    <script>
+        // --- 工具函数 ---
+        function showModal({ title, content, showCancel = true }) {
+            const overlay = document.getElementById('modalOverlay');
+            document.getElementById('modalTitle').textContent = title || '提示';
+            document.getElementById('modalBody').innerHTML = content;
+            const cancelBtn = document.getElementById('modalCancel');
+            cancelBtn.style.display = showCancel ? '' : 'none';
+            overlay.style.display = 'flex';
+
+            return new Promise((resolve) => {
+                const confirmBtn = document.getElementById('modalConfirm');
+                // 移除旧的 listener 防止累积
+                const newConfirm = confirmBtn.cloneNode(true);
+                confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
+                const newCancel = cancelBtn.cloneNode(true);
+                cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+
+                newConfirm.onclick = () => {
+                    overlay.style.display = 'none';
+                    resolve(true);
+                };
+                newCancel.onclick = () => {
+                    overlay.style.display = 'none';
+                    resolve(false);
+                };
+            });
+        }
+
+        function formatAmountYuan(fen) {
+            return (Number(fen) / 100).toFixed(2);
+        }
+
+        function formatDateTime(str) {
+            if (!str) return '-';
+            return str; // 假设后端返回已格式化，若未格式化需自行处理
+        }
+
+        // --- Sidebar & 路由逻辑 ---
+        const menuItems = document.querySelectorAll('.n-menu-item[data-tab]');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const mobileToggle = document.getElementById('btnMobileToggle');
+        const layoutSider = document.getElementById('layoutSider');
+        const mobileMask = document.getElementById('mobileMask');
+
+        function switchTab(tabId) {
+            // Update Menu Active
+            menuItems.forEach(item => {
+                if (item.dataset.tab === tabId) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+            // Update Content
+            tabContents.forEach(content => {
+                if (content.id === tabId) content.style.display = '';
+                else content.style.display = 'none';
+            });
+            // Close Mobile Sidebar
+            layoutSider.classList.remove('show');
+            mobileMask.classList.remove('show');
+
+            // Lazy Load
+            if (tabId === 'tab-store') loadProducts();
+            if (tabId === 'tab-booking') { loadBookingSlots(); loadMyBookings(); loadPublicBookings(); }
+            if (tabId === 'tab-timecard') loadTimecards();
+            if (tabId === 'tab-records') loadRecords();
+        }
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => switchTab(item.dataset.tab));
+        });
+
+        // Mobile Toggle
+        mobileToggle.onclick = () => {
+            layoutSider.classList.add('show');
+            mobileMask.classList.add('show');
+        };
+        mobileMask.onclick = () => {
+            layoutSider.classList.remove('show');
+            mobileMask.classList.remove('show');
+        };
+
+        // --- 业务逻辑 ---
+
+        // 1. 初始化 & 用户信息
+        async function initApp() {
+            try {
+                const user = await apiRequest('auth', 'me', 'GET');
+                
+                // 动态设置页面标题
+                const configData = await apiRequest('config', 'public', 'GET');
+                if (configData.system_name) {
+                    const pageTitle = document.getElementById('pageTitle');
+                    if (pageTitle) pageTitle.textContent = configData.system_name + ' - 用户中心';
+                    document.title = configData.system_name + ' - 用户中心';
+                }
+                
+                // Sidebar Info
+                document.getElementById('siderName').textContent = user.mobile || '用户';
+                document.getElementById('siderBalance').textContent = '￥' + formatAmountYuan(user.balance);
+                document.getElementById('siderAvatar').src = `https://q1.qlogo.cn/g?b=qq&nk=${user.qq || 0}&s=100`;
+
+                // Profile Info
+                document.getElementById('profQq').value = user.qq || '';
+
+                // Load Config & Billing Rules (只加载一次)
+                loadBillingRules(configData);
+                loadUserAnnouncements(configData);
+
+                // 应用favicon
+                const faviconUrl = configData.configs?.user_favicon;
+                if (faviconUrl) {
+                    document.getElementById('favicon').href = faviconUrl;
+                }
+
+                // Heartbeat / Status
+                checkEntranceStatus();
+                checkBookingStatus();
+                startBookingStatusCheck();
+
+            } catch (e) {
+                if (e.status === 401 || (e.message && (e.message.indexOf('未登录') !== -1))) {
+                    window.location.href = 'index.html';
+                } else {
+                    console.error(e);
+                }
+            }
+        }
+
+        async function loadBillingRules(configData) {
+            try {
+                if (!configData) configData = await apiRequest('config', 'public', 'GET');
+                const billingMinutes = configData.configs?.billing_minutes || 60;
+                const billingAmount = configData.configs?.billing_amount || 0;
+                const freeMinutes = configData.configs?.free_minutes || 5;
+
+                let billingText = '';
+                if (billingAmount > 0) {
+                    billingText = `<div><strong>计费规则：</strong>${billingMinutes}分钟内收费${billingAmount}元</div>`;
+                    billingText += `<div><strong>免费阈值：</strong>进场${freeMinutes}分钟内退场不计费</div>`;
+                } else {
+                    billingText = `<div><strong>计费规则：</strong>按分钟计费，1分钟1元</div>`;
+                    billingText += `<div><strong>免费阈值：</strong>进场${freeMinutes}分钟内退场不计费</div>`;
+                }
+
+                document.getElementById('billingRulesContent').innerHTML = billingText;
+            } catch (e) {
+                document.getElementById('billingRulesContent').innerHTML = '<div style="color:var(--n-danger);">加载失败</div>';
+            }
+        }
+
+        async function checkEntranceStatus() {
+            try {
+                document.getElementById('dashStatus').innerHTML = '<span style="color:var(--n-text-3);">检测中...</span>';
+                const current = await apiRequest('entrance', 'current', 'GET');
+                if (current && current.status === 0) {
+                    document.getElementById('dashStatus').innerHTML = '<span style="color:var(--n-success);font-weight:bold;">已入场 ✅</span>';
+                    document.getElementById('dashEnterTime').textContent = current.enter_time;
+                    startHeartbeat();
+                } else {
+                    document.getElementById('dashStatus').innerHTML = '<span style="color:var(--n-text-3);">未入场</span>';
+                    document.getElementById('dashEnterTime').textContent = '-';
+                    document.getElementById('dashDuration').textContent = '-';
+                    document.getElementById('dashAmount').textContent = '-';
+                    // 检查包场状态
+                    checkBookingStatus();
+                }
+            } catch (e) {
+                document.getElementById('dashStatus').innerHTML = '<span style="color:var(--n-text-3);">未入场</span>';
+            }
+        }
+
+        async function checkBookingStatus() {
+            try {
+                const status = await apiRequest('entrance', 'check_booking_status', 'GET');
+                const bookingStatusDiv = document.getElementById('bookingStatusContent');
+
+                if (status.has_booking) {
+                    if (status.can_enter) {
+                        bookingStatusDiv.innerHTML = '<span style="color:var(--n-success);">' + status.message + '</span>';
+                    } else {
+                        bookingStatusDiv.innerHTML = '<span style="color:var(--n-danger);">' + status.message + '</span>';
+                    }
+                } else {
+                    bookingStatusDiv.innerHTML = '<span style="color:var(--n-text-3);">当前无包场，可自由入场</span>';
+                }
+            } catch (e) {
+                document.getElementById('bookingStatusContent').innerHTML = '<span style="color:var(--n-text-3);">加载失败</span>';
+            }
+        }
+
+        let heartbeatTimer = null;
+        let bookingStatusTimer = null;
+        function startHeartbeat() {
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
+            heartbeatTimer = setInterval(async () => {
+                try {
+                    const data = await apiRequest('entrance', 'heartbeat', 'POST');
+                    if (!data.in_field && heartbeatTimer) {
+                        clearInterval(heartbeatTimer);
+                        checkEntranceStatus(); // Update UI
+                    }
+                    // 实时更新计费信息
+                    updateBillingInfo(data.duration_minutes || 0, data.amount || 0, data.amount_text);
+                } catch (e) { }
+            }, 5000); // 每5秒更新一次
+        }
+
+        function startBookingStatusCheck() {
+            if (bookingStatusTimer) clearInterval(bookingStatusTimer);
+            bookingStatusTimer = setInterval(async () => {
+                checkBookingStatus();
+            }, 30000); // 每30秒刷新一次包场状态
+        }
+
+        async function updateBillingInfo(durationMinutes, amount, amountText) {
+            let durationText = '';
+            if (durationMinutes >= 60) {
+                const hours = Math.floor(durationMinutes / 60);
+                const minutes = durationMinutes % 60;
+                durationText = `${hours}小时${minutes}分钟`;
+            } else {
+                durationText = `${durationMinutes}分钟`;
+            }
+
+            document.getElementById('dashDuration').textContent = durationText;
+            // 使用 amountText 如果存在，否则计算金额
+            const amountDisplay = amountText || (amount === 0 ? '免费' : '￥' + (amount / 100).toFixed(2));
+            document.getElementById('dashAmount').textContent = amountDisplay;
+        }
+
+        // 2. 入场/出场
+        document.getElementById('btnEnter').onclick = async () => {
+            try {
+                await apiRequest('entrance', 'enter', 'POST');
+                await showModal({ content: '入场登记成功！', showCancel: false });
+                checkEntranceStatus();
+                loadOnlineUsers(); // 实时更新在线用户
+            } catch (e) { showModal({ title: '入场失败', content: e.message, showCancel: false }); }
+        };
+
+        document.getElementById('btnExit').onclick = async () => {
+            try {
+                const res = await apiRequest('entrance', 'exit', 'POST');
+                let message = '出场登记成功！';
+
+                if (res.deducted && res.actual_amount > 0) {
+                    message += `<br><br>已扣款：￥${(res.actual_amount / 100).toFixed(2)}（剩余余额：￥${(res.balance_after / 100).toFixed(2)}）`;
+                } else if (res.actual_amount === 0) {
+                    if (res.use_time_card) {
+                        message += '<br><br>本次免费（使用时长卡抵消）';
+                    } else {
+                        message += '<br><br>本次免费（未超过免费阈值）';
+                    }
+                }
+
+                await showModal({ content: message, showCancel: false });
+                checkEntranceStatus();
+                loadOnlineUsers(); // 实时更新在线用户
+            } catch (e) { showModal({ title: '出场失败', content: e.message, showCancel: false }); }
+        };
+
+        // 3. 商品超市 Logic
+        async function loadProducts() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = '<p>加载商品中...</p>';
+            try {
+                const list = await apiRequest('product', 'list', 'GET');
+                if (!list || list.length === 0) {
+                    grid.innerHTML = '<p>暂无商品上架。</p>';
+                    return;
+                }
+                grid.innerHTML = '';
+                list.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    const imgUrl = p.image_url || 'https://via.placeholder.com/200x160?text=No+Image';
+                    card.innerHTML = `
+                        <img src="${imgUrl}" class="p-img">
+                        <div class="p-body">
+                            <div class="p-title">${p.name}</div>
+                            <div class="p-price">￥${(p.price / 100).toFixed(2)}</div>
+                            <div class="p-stock">剩余: ${p.stock}</div>
+                            <button class="btn btn-primary btn-sm btn-full" onclick="buyProduct(${p.id}, '${p.name}', ${p.price})">购买</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                grid.innerHTML = `<p style="color:red;">加载失败: ${e.message}</p>`;
+            }
+        }
+
+        async function buyProduct(id, name, price) {
+            const content = `
+                <p>商品：<strong>${name}</strong></p>
+                <p>价格：<strong>${(price / 100).toFixed(2)}</strong> 元</p>
+                <div class="form-group" style="margin-top:12px;">
+                    <label>支付方式</label>
+                    <select id="buyPayMethod" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+                        <option value="balance">余额支付</option>
+                        <option value="offline">线下支付 (前台结算)</option>
+                    </select>
+                </div>
+            `;
+            const ok = await showModal({ title: '购买商品', content });
+            if (ok) {
+                const method = document.getElementById('buyPayMethod').value;
+                try {
+                    await apiRequest('product', 'buy', 'POST', { product_id: id, quantity: 1, pay_method: method });
+                    await showModal({ title: '购买成功', content: '购买成功！', showCancel: false });
+                    loadProducts(); // Refresh stock
+                    initApp(); // Refresh balance
+                } catch (e) {
+                    showModal({ title: '购买失败', content: e.message, showCancel: false });
+                }
+            }
+        }
+
+        // 4. 其他模块逻辑复用
+        // Config & Notice
+        async function loadUserAnnouncements(configData) {
+            try {
+                if (!configData) configData = await apiRequest('config', 'public', 'GET');
+                if (configData.system_name) {
+                    document.title = '用户中心 - ' + configData.system_name;
+                    document.querySelector('.sider-brand span').textContent = '⚡ ' + configData.system_name;
+                }
+                const box = document.getElementById('userNoticeList');
+                box.innerHTML = (configData.announcements || []).map(a => `<li class="notice-item" onclick="showModal({title:'${a.title}',content:'${a.content.replace(/\n/g, '<br>')}',showCancel:false})">${a.title}</li>`).join('');
+            } catch (e) { }
+        }
+
+        // 在线用户列表
+        async function loadOnlineUsers() {
+            try {
+                const data = await apiRequest('admin', 'online_users', 'GET');
+                const box = document.getElementById('onlineUsersList');
+                const countBox = document.getElementById('dashOnlineCount');
+                
+                countBox.textContent = data.length || 0;
+                
+                if (!data || !data.length) {
+                    box.innerHTML = '<div style="text-align: center; color: var(--n-text-3);">当前无在线用户</div>';
+                    return;
+                }
+                
+                box.innerHTML = data.map(u => {
+                    // 手机号隐私保护：只显示前3位和后4位
+                    const mobile = u.mobile ? u.mobile.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '-';
+                    return `
+                    <div style="display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-base);">
+                        <img src="https://q1.qlogo.cn/g?b=qq&nk=${u.qq || '0'}&s=100" 
+                             style="width: 40px; height: 40px; border-radius: 50%; margin-right: 12px;">
+                        <div>
+                            <div style="font-weight: 500;">QQ: ${u.qq || '-'}</div>
+                            <div style="font-size: 12px; color: var(--n-text-3);">手机: ${mobile}</div>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            } catch (e) {
+                document.getElementById('onlineUsersList').innerHTML = '<div style="text-align: center; color: var(--n-danger);">加载失败</div>';
+            }
+        }
+
+        // Booking
+        async function loadBookingSlots() {
+            try {
+                const data = await apiRequest('config', 'public', 'GET');
+                const slots = data.booking_slots || [];
+                const select = document.getElementById('bkSlot');
+                select.innerHTML = '<option value="">请选择包场时段</option>' + slots.map(s =>
+                    `<option value="${s.id}" data-start="${s.start_time}" data-end="${s.end_time}">${s.name} (${s.start_time.substring(0, 5)}-${s.end_time.substring(0, 5)}) ￥${(s.price / 100).toFixed(2)}</option>`
+                ).join('');
+                document.getElementById('slotPriceList').innerHTML = slots.map(s => `<div>${s.name}: ${s.start_time.substring(0, 5)}-${s.end_time.substring(0, 5)} <strong>￥${(s.price / 100).toFixed(2)}</strong></div>`).join('') || '暂无规则';
+            } catch (e) { }
+        }
+
+        document.getElementById('btnBookingApply').onclick = async () => {
+            /* Reuse booking apply logic */
+            const date = document.getElementById('bkDate').value;
+            // Note: In old logic, user selected start/end time manually? 
+            // Actually old logic had `bkSlot` select OR generic inputs. 
+            // Let's stick to the slot selection as it is robust.
+            // Wait, previous conversation fixed "Pricing Logic" based on slots. 
+            // But `api_booking_apply` expects `start_time` and `end_time`.
+            // I need to get start/end time from the selected slot (option data attributes).
+
+            // Fixed Select Option:
+            const select = document.getElementById('bkSlot');
+            if (!select.value) { return showModal({ content: '请选择时段', showCancel: false }); }
+
+            // We need to fetch start/end from config data again or store it in DOM. 
+            // Let's re-fetch config or rely on what we loaded. 
+            // Better: Store in data attribute when loading slots.
+        };
+        // Correcting `loadBookingSlots` to store data
+        async function loadBookingSlotsCorrected() {
+            try {
+                const data = await apiRequest('config', 'public', 'GET');
+                const slots = data.booking_slots || [];
+                const select = document.getElementById('bkSlot');
+                select.innerHTML = '<option value="">请选择包场时段</option>' + slots.map(s =>
+                    `<option value="${s.id}" data-start="${s.start_time}" data-end="${s.end_time}">${s.name} (${s.start_time.substring(0, 5)}-${s.end_time.substring(0, 5)}) ￥${(s.price / 100).toFixed(2)}</option>`
+                ).join('');
+                document.getElementById('slotPriceList').innerHTML = slots.map(s => `<div>${s.name}: ${s.start_time.substring(0, 5)}-${s.end_time.substring(0, 5)} <strong>￥${(s.price / 100).toFixed(2)}</strong></div>`).join('') || '暂无规则';
+            } catch (e) { }
+        }
+        // Override the initial one
+        window.loadBookingSlots = loadBookingSlotsCorrected;
+
+        document.getElementById('btnBookingApply').onclick = async () => {
+            const date = document.getElementById('bkDate').value;
+            const select = document.getElementById('bkSlot');
+            const pt = select.options[select.selectedIndex];
+            const purpose = document.getElementById('bkPurpose').value;
+            const invited = document.getElementById('bkInvited').value;
+
+            if (!date || !select.value) return showModal({ content: '请完善日期和时段选择', showCancel: false });
+
+            const start = pt.getAttribute('data-start');
+            const end = pt.getAttribute('data-end');
+
+            try {
+                await apiRequest('booking', 'apply', 'POST', { date, start_time: start, end_time: end, purpose, invited });
+                await showModal({ content: '申请已提交，请等待审核', showCancel: false });
+                loadMyBookings();
+            } catch (e) { showModal({ title: '提交失败', content: e.message, showCancel: false }); }
+        };
+
+        async function loadMyBookings() {
+            const box = document.getElementById('myBookingList');
+            box.innerHTML = '加载中...';
+            try {
+                const list = await apiRequest('booking', 'my_list', 'GET');
+                if (!list.length) { box.innerHTML = '无记录'; return; }
+                box.innerHTML = list.map(b => {
+                    const statusMap = { 0: '待审核', 1: '已通过', 2: '已拒绝', 3: '已取消' };
+                    const colorMap = { 0: '#2080f0', 1: '#18a058', 2: '#d03050', 3: '#999' };
+                    return `<div style="padding:8px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                        <span>${b.date} ${b.start_time.substring(0, 5)}-${b.end_time.substring(0, 5)}</span>
+                        <span style="color:${colorMap[b.status]}">${statusMap[b.status]}</span>
+                     </div>`;
+                }).join('');
+            } catch (e) { box.innerHTML = e.message; }
+        }
+        async function loadPublicBookings() {
+            const box = document.getElementById('publicBookingList');
+            try {
+                const list = await apiRequest('booking', 'public_list', 'GET');
+                box.innerHTML = list.length ? list.map(b =>
+                    `<div>${b.date} ${b.start_time.substring(0, 5)}-${b.end_time.substring(0, 5)} <span style="font-weight:bold; color:#e67e22;">[占用]</span></div>`
+                ).join('') : '近期无占用';
+            } catch (e) { }
+        }
+
+        // Timecard
+        async function loadTimecards() {
+            const planBox = document.getElementById('planList');
+            const myBox = document.getElementById('myCardList');
+            try {
+                // My Cards
+                const cards = await apiRequest('timecard', 'my_cards', 'GET');
+                if (cards.length) {
+                    myBox.innerHTML = cards.map(c => `
+                        <div class="card" style="padding:16px; margin-bottom:12px;">
+                            <div style="font-weight:bold; margin-bottom:8px;">${c.plan_name || '套餐'} (剩余 ${c.remaining_min} 分钟)</div>
+                            <div style="font-size:12px; color:#666;">有效期至: ${c.expire_time}</div>
+                        </div>
+                     `).join('');
+                } else { myBox.innerHTML = '<p>暂无可用时长卡</p>'; }
+
+                // Plans
+                const plans = await apiRequest('timecard', 'plans', 'GET');
+                planBox.innerHTML = plans.map(p => `
+                    <div class="product-card">
+                        <div class="p-body">
+                            <div class="p-title">${p.name}</div>
+                            <div class="p-price">￥${(p.price / 100).toFixed(2)}</div>
+                            <div class="p-stock">${p.duration_min}分钟 / ${p.valid_days}天</div>
+                            <button class="btn btn-primary btn-sm btn-full" onclick="buyPlan(${p.id}, '${p.name}', ${p.price})">购买</button>
+                        </div>
+                    </div>
+                 `).join('');
+            } catch (e) { }
+        }
+        async function buyPlan(id, name, price) {
+            const ok = await showModal({ title: '确认购买', content: `购买套餐：${name}<br>价格：${(price / 100).toFixed(2)} 元` });
+            if (ok) {
+                try {
+                    await apiRequest('timecard', 'buy', 'POST', { plan_id: id });
+                    showModal({ content: '购买成功！', showCancel: false });
+                    loadTimecards();
+                    initApp();
+                } catch (e) { showModal({ title: '失败', content: e.message, showCancel: false }); }
+            }
+        }
+
+        // Recharge
+        document.getElementById('btnCreateOrder').onclick = async () => {
+            const amount = document.getElementById('rechargeAmount').value;
+            try {
+                const data = await apiRequest('recharge', 'create_order', 'POST', { amount: Math.round(amount * 100), pay_method: 1 }); // Default method
+                showModal({ content: `模拟下单成功，订单号：${data.order_no}`, showCancel: false });
+            } catch (e) { showModal({ content: e.message, showCancel: false }); }
+        };
+        document.getElementById('btnCardRecharge').onclick = async () => {
+            const cardNo = document.getElementById('cardNo').value;
+            try {
+                const data = await apiRequest('recharge', 'card_recharge', 'POST', { card_no: cardNo });
+                showModal({ content: `充值成功，到账 ${formatAmountYuan(data.amount)} 元`, showCancel: false });
+                initApp();
+            } catch (e) { showModal({ content: e.message, showCancel: false }); }
+        };
+
+        // Records
+        async function loadRecords() {
+            try {
+                const eRes = await apiRequest('user', 'entrance_records', 'GET', { page: 1, pageSize: 10 });
+                const cRes = await apiRequest('user', 'consume_records', 'GET', { page: 1, pageSize: 10 });
+
+                let eHtml = '<table class="n-table"><thead><tr><th>进场</th><th>出场</th><th>金额</th></tr></thead><tbody>';
+                eHtml += (eRes.list || []).map(r => `<tr><td>${formatDateTime(r.enter_time).substring(5, 16)}</td><td>${r.exit_time ? formatDateTime(r.exit_time).substring(5, 16) : '-'}</td><td>${(r.actual_amount / 100).toFixed(2)}</td></tr>`).join('');
+                eHtml += '</tbody></table>';
+                document.getElementById('entranceRecords').innerHTML = `<div class="table-wrapper">${eHtml}</div>`;
+
+                let cHtml = '<table class="n-table"><thead><tr><th>时间</th><th>项目</th><th>金额</th></tr></thead><tbody>';
+                const typeMap = { 1: '入场', 2: '套餐', 3: '商品', 4: '包场', 5: '调整' };
+                cHtml += (cRes.list || []).map(r => `<tr><td>${formatDateTime(r.created_at).substring(5, 16)}</td><td>${typeMap[r.type] || '其他'}</td><td style="color:${r.amount > 0 ? 'red' : 'green'}">${r.amount > 0 ? '-' : '+'}${(Math.abs(r.amount) / 100).toFixed(2)}</td></tr>`).join('');
+                cHtml += '</tbody></table>';
+                document.getElementById('consumeRecords').innerHTML = `<div class="table-wrapper">${cHtml}</div>`;
+            } catch (e) { }
+        }
+
+        // Profile
+        document.getElementById('btnUpdateProfile').onclick = async () => {
+            try {
+                await apiRequest('user', 'update_profile', 'POST', { qq: document.getElementById('profQq').value });
+                showModal({ content: '保存成功', showCancel: false });
+            } catch (e) { showModal({ content: e.message, showCancel: false }); }
+        };
+        document.getElementById('btnChangePwd').onclick = async () => {
+            /* password change logic */
+            const oldp = document.getElementById('profOldPwd').value;
+            const newp = document.getElementById('profNewPwd').value;
+            const conp = document.getElementById('profNewPwd2').value;
+            try {
+                await apiRequest('user', 'change_password', 'POST', { old_password: oldp, new_password: newp, confirm_password: conp });
+                showModal({ content: '修改成功，请重新登录', showCancel: false }).then(() => {
+                    window.location.href = 'index.html';
+                });
+            } catch (e) { showModal({ content: e.message, showCancel: false }); }
+        };
+        document.getElementById('btnLogout').onclick = () => {
+            showModal({ content: '确定退出登录？' }).then(async ok => {
+                if (ok) {
+                    try { await apiRequest('auth', 'logout', 'POST'); } catch (e) { }
+                    window.location.href = 'index.html';
+                }
+            });
+        };
+
+        // Start
+        initApp();
+        loadBookingSlotsCorrected(); // Preload slots info
+        loadOnlineUsers(); // 加载在线用户列表
+    </script>
+</body>
+
+</html>

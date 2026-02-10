@@ -1,0 +1,2005 @@
+<!-- admin.html - 管理员登录 + 后台管理 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title id="adminPageTitle">管理员后台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/style.css">
+    <link id="favicon" rel="icon" type="image/x-icon" href="">
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="top-bar" id="adminTopBar">
+            <div class="top-bar-title">管理中心</div>
+            <div class="user-info-wrapper">
+                <div class="avatar-container" id="adminAvatarBtn">
+                    <img src="https://q1.qlogo.cn/g?b=qq&nk=0&s=100" id="adminAvatarImg" alt="管理员头像">
+                </div>
+                <!-- 快捷下拉菜单 -->
+                <div class="dropdown-menu" id="adminDropdown">
+                    <div style="padding: 10px 12px; border-bottom: 1px solid var(--border-base); margin-bottom: 4px;">
+                        <div id="dropdownAdminName" style="font-weight: bold; font-size: 14px;">管理员</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">系统管理权限</div>
+                    </div>
+                    <div class="dropdown-item" onclick="window.location.href='index.html'">
+                        <span>🏠</span> 返回首页
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" onclick="showSetQQForm()">
+                        <span>📝</span> 设置QQ号
+                    </div>
+                    <div class="dropdown-item danger" onclick="logout()">
+                        <span>🚪</span> 退出登录
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="adminLoginCard">
+            <div class="card-header">管理员登录</div>
+            <div class="card-body">
+                <div id="adminLoginMsg"></div>
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="adminUser">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="adminPass">
+                </div>
+                <button class="btn" id="btnAdminLogin">登录</button>
+            </div>
+        </div>
+
+        <div class="card" id="adminMainCard" style="display:none;">
+            <div class="tabs">
+                <div class="tab-item active" data-tab="tab-overview">概览</div>
+                <div class="tab-item" data-tab="tab-users">用户管理</div>
+                <div class="tab-item" data-tab="tab-bookings">包场管理</div>
+                <div class="tab-item" data-tab="tab-products">商品管理</div>
+                <div class="tab-item" data-tab="tab-plans">套餐管理</div>
+                <div class="tab-item" data-tab="tab-cards">卡券管理</div>
+                <div class="tab-item" data-tab="tab-announcements">公告管理</div>
+                <div class="tab-item" data-tab="tab-banners">轮播图管理</div>
+                <div class="tab-item" data-tab="tab-logs">操作日志</div>
+                <div class="tab-item" data-tab="tab-config">系统配置</div>
+            </div>
+            <div class="card-body">
+                <!-- 概览 -->
+                <div id="tab-overview">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">今日入场</div>
+                            <div class="stat-value" id="ovTodayEntrance">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">今日充值 (元)</div>
+                            <div class="stat-value" id="ovTodayRecharge">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">今日消费 (元)</div>
+                            <div class="stat-value" id="ovTodayConsume" style="color: var(--danger-color);">-</div>
+                        </div>
+                    </div>
+                    <div class="stats-grid" style="margin-top: 16px;">
+                        <div class="stat-card">
+                            <div class="stat-label">本月累计充值 (元)</div>
+                            <div class="stat-value" id="ovMonthRecharge">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">本月累计消费 (元)</div>
+                            <div class="stat-value" id="ovMonthConsume" style="color: var(--danger-color);">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 用户管理 -->
+                <div id="tab-users" style="display:none;">
+                    <div id="userMgrMsg"></div>
+                    <div class="form-group">
+                        <label>手机号</label>
+                        <input type="text" id="umMobile" placeholder="支持模糊查询">
+                    </div>
+                    <div class="form-group">
+                        <label>QQ</label>
+                        <input type="text" id="umQq" placeholder="支持模糊查询">
+                    </div>
+                    <div class="form-group">
+                        <label>状态</label>
+                        <select id="umStatus">
+                            <option value="">全部</option>
+                            <option value="1">正常</option>
+                            <option value="0">禁用</option>
+                        </select>
+                    </div>
+                    <button class="btn" id="btnSearchUsers">搜索</button>
+                    <button class="btn btn-secondary" id="btnLoadOnline">查看在场用户</button>
+
+                    <div style="margin-top: 12px;" id="userList"></div>
+                </div>
+
+                <!-- 包场管理 -->
+                <div id="tab-bookings" style="display:none;">
+                    <div id="bkMgrMsg"></div>
+                    <div class="form-group">
+                        <label>日期</label>
+                        <input type="date" id="admBkDate">
+                    </div>
+                    <div class="form-group">
+                        <label>状态</label>
+                        <select id="admBkStatus">
+                            <option value="">全部</option>
+                            <option value="0">待审核</option>
+                            <option value="1">已通过</option>
+                            <option value="2">已拒绝</option>
+                            <option value="3">已取消</option>
+                        </select>
+                    </div>
+                    <button class="btn" id="btnSearchBookings">查询</button>
+                    <div style="margin-top: 12px;" id="bookingListAdmin"></div>
+                </div>
+
+                <!-- 商品管理 -->
+                <div id="tab-products" style="display:none;">
+                    <div style="margin-bottom: 12px; display: flex; gap: 10px;">
+                        <button class="btn btn-primary" id="btnAddProduct">＋ 添加商品</button>
+                        <button class="btn btn-secondary" id="btnProductOrders">查看销售记录</button>
+                    </div>
+                    <div id="productListAdmin"></div>
+                </div>
+
+                <!-- 系统配置 -->
+                <div id="tab-config" style="display:none;">
+                    <div id="cfgMsg"></div>
+                    <div class="form-group">
+                        <label>系统名称 (显示在首页和标题栏)</label>
+                        <input type="text" id="cfgSystemName" placeholder="如：XX场地计费管理系统">
+                    </div>
+                    <div class="form-group">
+                        <label>入场免费阈值 (分钟)</label>
+                        <input type="number" id="cfgFreeMinutes" min="0">
+                        <small style="color: var(--n-text-3);">进场后在此时间内退场不计费</small>
+                    </div>
+                    <div class="form-group">
+                        <label>计费规则设置</label>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <input type="number" id="cfgBillingMinutes" min="1" placeholder="分钟" style="width: 120px;">
+                            <span>内收费</span>
+                            <input type="number" id="cfgBillingAmount" min="0" placeholder="金额（元）" style="width: 120px;">
+                            <span>元</span>
+                        </div>
+                        <small style="color: var(--n-text-3);">例如：60分钟内收费10元</small>
+                    </div>
+                    <div class="form-group">
+                        <label>包场撤场缓冲时间 (分钟)</label>
+                        <input type="number" id="cfgBookingGraceMinutes" min="0" value="5">
+                        <small style="color: var(--n-text-3);">包场结束后，用户在此时间内退场不收费，超过则开始计时收费</small>
+                    </div>
+                    <div class="form-group">
+                        <label>管理员QQ号 (自动同步头像)</label>
+                        <input type="text" id="cfgAdminQQ" placeholder="请输入管理员QQ号">
+                    </div>
+                    <div class="form-group">
+                        <label>登录页面favicon图标URL</label>
+                        <input type="text" id="cfgLoginFavicon" placeholder="https://example.com/favicon.ico">
+                        <small style="color: var(--n-text-3);">留空则使用默认图标</small>
+                    </div>
+                    <div class="form-group">
+                        <label>用户端favicon图标URL</label>
+                        <input type="text" id="cfgUserFavicon" placeholder="https://example.com/favicon.ico">
+                        <small style="color: var(--n-text-3);">留空则使用默认图标</small>
+                    </div>
+                    <div class="form-group">
+                        <label>管理后台favicon图标URL</label>
+                        <input type="text" id="cfgAdminFavicon" placeholder="https://example.com/favicon.ico">
+                        <small style="color: var(--n-text-3);">留空则使用默认图标</small>
+                    </div>
+                    <button class="btn btn-primary" id="btnSaveConfig">保存系统设置</button>
+                    <hr style="margin: 16px 0;">
+                    <div style="margin-bottom: 20px;">
+                        <h4>SMTP邮件设置</h4>
+                        <div class="form-group">
+                            <label>SMTP服务器</label>
+                            <input type="text" id="cfgSmtpHost" placeholder="smtp.qq.com">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP端口</label>
+                            <input type="number" id="cfgSmtpPort" placeholder="587">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP用户名</label>
+                            <input type="text" id="cfgSmtpUser" placeholder="your@qq.com">
+                        </div>
+                        <div class="form-group">
+                            <label>SMTP密码</label>
+                            <input type="password" id="cfgSmtpPass" placeholder="授权码">
+                        </div>
+                        <div class="form-group">
+                            <label>发件人邮箱</label>
+                            <input type="email" id="cfgSmtpFrom" placeholder="your@qq.com">
+                        </div>
+                        <div class="form-group">
+                            <label>发件人名称</label>
+                            <input type="text" id="cfgSmtpFromName" placeholder="系统名称">
+                        </div>
+                        <button class="btn btn-primary" id="btnSaveSmtp">保存SMTP设置</button>
+                        <button class="btn btn-secondary" id="btnTestSmtp">测试发送</button>
+                        <button class="btn btn-secondary" id="btnViewEmailLogs">查看邮件日志</button>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <h4>包场时间段管理</h4>
+                        <button class="btn" onclick="showSlotMgr()">管理包场时间段</button>
+                    </div>
+
+                    <p style="margin-top: 16px; color:#888;">
+                        提示：更多系统设置可通过数据库 `system_configs` 表扩展。
+                    </p>
+                </div>
+
+                <!-- 套餐管理 -->
+                <div id="tab-plans" style="display:none;">
+                    <div id="planMgrMsg"></div>
+                    <button class="btn" onclick="showPlanForm()">新增套餐</button>
+                    <div id="planListAdmin" style="margin-top: 12px;"></div>
+                </div>
+
+                <!-- 卡券管理 -->
+                <div id="tab-cards" style="display:none;">
+                    <div id="cardMgrMsg"></div>
+                    <div class="form-group">
+                        <label>生成数量</label>
+                        <input type="number" id="genCardCount" value="10" min="1" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label>面值（元）</label>
+                        <input type="number" id="genCardAmount" value="50">
+                    </div>
+                    <button class="btn" id="btnGenCards">批量生成卡券</button>
+                    <div id="cardListAdmin" style="margin-top: 12px;"></div>
+                </div>
+
+                <!-- 公告管理 -->
+                <div id="tab-announcements" style="display:none;">
+                    <div id="annMgrMsg"></div>
+                    <button class="btn" onclick="showAnnForm()">发布公告</button>
+                    <div id="annListAdmin" style="margin-top: 12px;"></div>
+                </div>
+
+                <!-- 轮播图管理 -->
+                <div id="tab-banners" style="display:none;">
+                    <div id="bannerMgrMsg"></div>
+                    <button class="btn" onclick="showBannerForm()">添加轮播图</button>
+                    <div id="bannerListAdmin" style="margin-top: 12px;"></div>
+                </div>
+
+                <!-- 操作日志 -->
+                <div id="tab-logs" style="display:none;">
+                    <div style="margin-bottom: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="logSearchInput" placeholder="搜索日志内容..." style="padding:6px 12px;border:1px solid #ddd;border-radius:4px;min-width:200px;">
+                        <button class="btn btn-sm" onclick="loadLogs(1)">搜索</button>
+                    </div>
+                    <div id="logListAdmin"></div>
+                    <div id="logPagination" style="margin-top: 12px; display: flex; gap: 8px; justify-content: center;">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- 通用模态框 -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="margin-bottom: 12px; font-weight: 500;">提示</h3>
+            <div id="modalBody" style="margin-bottom: 24px; color: var(--n-text-2); font-size: 14px; line-height: 1.6;">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button id="modalCancel" class="btn">取消</button>
+                <button id="modalConfirm" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QQ设置模态框 -->
+    <div id="qqModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 12px; font-weight: 500;">设置QQ号</h3>
+            <div style="margin-bottom: 24px;">
+                <div class="form-group">
+                    <label>QQ号码</label>
+                    <input type="text" id="qqNumber" placeholder="请输入您的QQ号">
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button class="btn" onclick="document.getElementById('qqModal').style.display='none'">取消</button>
+                <button class="btn btn-primary" onclick="updateQQ()">确定</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="assets/api.js"></script>
+    <script>
+        // --- 增强版交互工具 ---
+        function showModal({ title, content, onConfirm, showCancel = true }) {
+            const overlay = document.getElementById('modalOverlay');
+            document.getElementById('modalTitle').textContent = title || '提示';
+            document.getElementById('modalBody').innerHTML = content;
+            const cancelBtn = document.getElementById('modalCancel');
+            cancelBtn.style.display = showCancel ? '' : 'none';
+            overlay.style.display = 'flex';
+
+            return new Promise((resolve) => {
+                document.getElementById('modalConfirm').onclick = () => {
+                    overlay.style.display = 'none';
+                    resolve(true);
+                };
+                cancelBtn.onclick = () => {
+                    overlay.style.display = 'none';
+                    resolve(false);
+                };
+            });
+        }
+        // --- 商品管理逻辑 START ---
+        let currentProductPage = 1;
+
+        async function loadProducts(page = 1) {
+            currentProductPage = page;
+            const box = document.getElementById('productListAdmin');
+            box.innerHTML = '<p>加载中...</p>';
+            try {
+                const res = await apiRequest('product', 'admin_list', 'GET', { page, page_size: 20 });
+                const list = res.list || [];
+                const total = res.total || 0;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                const table = document.createElement('table');
+                table.className = 'n-table';
+                table.style.width = '100%';
+                table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th style="width:50px;">ID</th>
+                                <th style="width:60px;">图片</th>
+                                <th>名称</th>
+                                <th>价格(元)</th>
+                                <th>库存</th>
+                                <th>排序</th>
+                                <th>状态</th>
+                                <th style="width:120px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    `;
+                const tbody = table.querySelector('tbody');
+                list.forEach(p => {
+                    const tr = document.createElement('tr');
+                    const imgHtml = p.image_url ? `<img src="${p.image_url}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">` : '-';
+                    const statusHtml = p.status == 1 ? '<span style="color:#2e7d32;">上架</span>' : '<span style="color:#c62828;">下架</span>';
+                    tr.innerHTML = `
+                            <td>${p.id}</td>
+                            <td>${imgHtml}</td>
+                            <td>${p.name}</td>
+                            <td>${(p.price / 100).toFixed(2)}</td>
+                            <td>${p.stock}</td>
+                            <td>${p.sort_order}</td>
+                            <td>${statusHtml}</td>
+                            <td>
+                                <button class="btn btn-sm btn-link" onclick='showProductForm(${JSON.stringify(p)})'>编辑</button>
+                                <button class="btn btn-sm btn-link" onclick="deleteProduct(${p.id})">删除</button>
+                            </td>
+                        `;
+                    tbody.appendChild(tr);
+                });
+                box.innerHTML = '';
+                wrapper.appendChild(table);
+                box.appendChild(wrapper);
+
+                // 简单分页（暂未实现完整分页条，预留）
+            } catch (e) {
+                box.innerHTML = `<p style="color:red;">加载失败: ${e.message}</p>`;
+            }
+        }
+
+        document.getElementById('btnAddProduct').onclick = () => showProductForm();
+
+        async function showProductForm(product = null) {
+            const isEdit = !!product;
+            const title = isEdit ? '编辑商品' : '添加商品';
+            const id = isEdit ? product.id : 0;
+            const name = isEdit ? product.name : '';
+            const price = isEdit ? (product.price / 100).toFixed(2) : '';
+            const stock = isEdit ? product.stock : '';
+            const sort = isEdit ? product.sort_order : '0';
+            const img = isEdit ? product.image_url : '';
+            const desc = isEdit ? product.description : '';
+            const status = isEdit ? product.status : 1;
+
+            const content = `
+                    <div class="form-group">
+                        <label>商品名称</label>
+                        <input type="text" id="prodName" value="${name}">
+                    </div>
+                    <div class="form-group">
+                        <label>价格 (元)</label>
+                        <input type="number" id="prodPrice" value="${price}" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>库存</label>
+                        <input type="number" id="prodStock" value="${stock}">
+                    </div>
+                    <div class="form-group">
+                        <label>排序权重 (越大越前)</label>
+                        <input type="number" id="prodSort" value="${sort}">
+                    </div>
+                    <div class="form-group">
+                        <label>图片 URL</label>
+                        <input type="text" id="prodImg" value="${img}" placeholder="http://...">
+                    </div>
+                    <div class="form-group">
+                        <label>描述</label>
+                        <textarea id="prodDesc" rows="3">${desc}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>状态</label>
+                        <select id="prodStatus">
+                            <option value="1" ${status == 1 ? 'selected' : ''}>上架</option>
+                            <option value="0" ${status == 0 ? 'selected' : ''}>下架</option>
+                        </select>
+                    </div>
+                `;
+
+            const ok = await showModal({ title, content });
+            if (ok) {
+                const newName = document.getElementById('prodName').value;
+                const newPrice = Math.round(parseFloat(document.getElementById('prodPrice').value || 0) * 100);
+                const newStock = parseInt(document.getElementById('prodStock').value || 0);
+                const newSort = parseInt(document.getElementById('prodSort').value || 0);
+                const newImg = document.getElementById('prodImg').value;
+                const newDesc = document.getElementById('prodDesc').value;
+                const newStatus = document.getElementById('prodStatus').value;
+
+                try {
+                    await apiRequest('product', 'admin_save', 'POST', {
+                        id, name: newName, price: newPrice, stock: newStock, sort_order: newSort,
+                        image_url: newImg, description: newDesc, status: newStatus
+                    });
+                    showMessage(document.getElementById('productListAdmin'), 'success', '保存成功'); // Hacky reuse
+                    loadProducts(currentProductPage);
+                } catch (e) {
+                    alert(e.message);
+                }
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('确定要删除该商品吗？')) return;
+            try {
+                await apiRequest('product', 'admin_delete', 'POST', { id });
+                loadProducts(currentProductPage);
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+
+        document.getElementById('btnProductOrders').onclick = async () => {
+            const box = document.getElementById('productListAdmin');
+            box.innerHTML = '<p>加载订单中...</p>';
+            try {
+                const res = await apiRequest('product', 'admin_orders', 'GET', { page: 1, page_size: 50 });
+
+                console.log('销售记录响应:', res);
+
+                if (!res || !res.list) {
+                    box.innerHTML = '<p>数据格式错误</p>';
+                    return;
+                }
+
+                if (res.list.length === 0) {
+                    box.innerHTML = '<p>暂无销售记录</p>';
+                    return;
+                }
+
+                // 创建容器
+                box.innerHTML = '';
+
+                // 添加返回按钮
+                const backBtn = document.createElement('button');
+                backBtn.className = 'btn btn-secondary';
+                backBtn.textContent = '返回商品列表';
+                backBtn.style.marginBottom = '12px';
+                backBtn.onclick = () => loadProducts(currentProductPage);
+                box.appendChild(backBtn);
+
+                // 创建表格容器
+                const wrapper = document.createElement('div');
+                wrapper.style.overflowX = 'auto';
+                wrapper.style.marginTop = '12px';
+
+                const table = document.createElement('table');
+                table.className = 'n-table';
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="padding: 8px; border: 1px solid #ddd;">ID</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">用户</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">商品快照</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">数量/总价</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">支付方式</th>
+                            <th style="padding: 8px; border: 1px solid #ddd;">时间</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+
+                const tbody = table.querySelector('tbody');
+                (res.list || []).forEach(o => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="padding: 8px; border: 1px solid #ddd;">${o.id}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${o.mobile || o.user_id}<br><small>QQ:${o.qq || '-'}</small></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${o.product_name}<br><small>￥${(o.product_price / 100).toFixed(2)}</small></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">x${o.quantity}<br><strong>￥${(o.total_amount / 100).toFixed(2)}</strong></td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${o.pay_method == 'balance' ? '余额' : '线下'}</td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">${formatDateTime(o.created_at)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                wrapper.appendChild(table);
+                box.appendChild(wrapper);
+            } catch (e) {
+                console.error('加载销售记录失败:', e);
+                box.innerHTML = `<p style="color:red;">加载失败：${e.message}</p>`;
+                loadProducts(currentProductPage);
+            }
+        };
+        // --- 商品管理逻辑 END ---
+
+        // 标签切换 (Modified for Tab Loading)
+        document.querySelectorAll('.tab-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                const tabId = item.getAttribute('data-tab');
+                document.querySelectorAll('#adminMainCard .card-body > div')
+                    .forEach(div => div.style.display = 'none');
+                document.getElementById(tabId).style.display = '';
+
+                // 切换时加载数据
+                if (tabId === 'tab-products') loadProducts();
+                if (tabId === 'tab-plans') loadPlans();
+                if (tabId === 'tab-cards') loadCards();
+                if (tabId === 'tab-announcements') loadAnnouncements();
+                if (tabId === 'tab-banners') loadBanners();
+                if (tabId === 'tab-logs') loadLogs();
+            });
+        });
+
+        document.getElementById('btnAdminLogin').onclick = async function () {
+            const username = document.getElementById('adminUser').value.trim();
+            const password = document.getElementById('adminPass').value.trim();
+            const msgBox = document.getElementById('adminLoginMsg');
+            try {
+                if (!username || !password) {
+                    showMessage(msgBox, 'error', '请输入用户名和密码');
+                    return;
+                }
+                await apiRequest('auth', 'admin_login', 'POST', { username, password });
+
+                // 登录成功后的 UI 切换逻辑收敛到 enterAdminMode
+                enterAdminMode(username);
+            } catch (e) {
+                showModal({ title: '登录失败', content: e.message, showCancel: false });
+            }
+        };
+
+        async function enterAdminMode(username) {
+            document.getElementById('adminLoginCard').style.display = 'none';
+            document.getElementById('adminMainCard').style.display = '';
+            const topBar = document.getElementById('adminTopBar');
+            if (topBar) topBar.style.display = 'flex';
+
+            try {
+                const data = await apiRequest('admin', 'me', 'GET');
+                if (data && data.qq) {
+                    document.getElementById('adminAvatarImg').src = `https://q1.qlogo.cn/g?b=qq&nk=${data.qq}&s=100`;
+                }
+                document.getElementById('dropdownAdminName').textContent = username || data.username || '管理员';
+
+                loadOverview();
+                loadUsers();
+                loadConfig();
+            } catch (e) { console.error('进入管理模式失败', e); }
+        }
+
+        async function tryAutoLogin() {
+            try {
+                // 如果当前 Session 有效，apiRequest('admin', 'me') 会直接返回数据
+                const data = await apiRequest('admin', 'me', 'GET');
+                if (data) {
+                    enterAdminMode(data.username);
+                }
+            } catch (e) {
+                // 未登录状态下 apiRequest 会抛出异常，忽略即可，保持登录卡片显示
+                console.log('未自动登录:', e.message);
+            }
+        }
+
+        async function logout() {
+            const ok = await showModal({ title: '确认退出', content: '确定要退出管理后台吗？' });
+            if (!ok) return;
+            try { await apiRequest('auth', 'logout', 'POST'); } catch (e) { }
+            window.location.href = 'index.html';
+        }
+
+        // 头像点击与下拉菜单
+        const avatarBtn = document.getElementById('adminAvatarBtn');
+        const dropdown = document.getElementById('adminDropdown');
+        avatarBtn.onclick = (e) => {
+            e.stopPropagation();
+            dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+        };
+        document.addEventListener('click', () => {
+            dropdown.style.display = 'none';
+        });
+        dropdown.onclick = (e) => e.stopPropagation();
+
+        // 尝试自动获取当前管理员，若已登录则直接进入后台
+        async function tryAutoLogin() {
+            try {
+                const data = await apiRequest('admin', 'me', 'GET');
+                if (data && data.id) {
+                    document.getElementById('adminLoginCard').style.display = 'none';
+                    document.getElementById('adminMainCard').style.display = '';
+                    if (data.qq) {
+                        document.getElementById('adminAvatarImg').src = `https://q1.qlogo.cn/g?b=qq&nk=${data.qq}&s=100`;
+                    }
+                    loadOverview();
+                    loadUsers();
+                    loadConfig();
+                }
+            } catch (e) {
+                // 未登录则保持登录框
+            }
+        }
+
+        // 概览
+        async function loadOverview() {
+            const msgBox = document.getElementById('overviewMsg');
+            try {
+                const data = await apiRequest('admin', 'stats_overview', 'GET');
+                document.getElementById('ovTodayEntrance').textContent = data.today.entrance_count;
+                document.getElementById('ovTodayRecharge').textContent = formatAmount(data.today.recharge_total);
+                document.getElementById('ovTodayConsume').textContent = formatAmount(data.today.consume_total);
+                document.getElementById('ovMonthRecharge').textContent = formatAmount(data.month.recharge_total);
+                document.getElementById('ovMonthConsume').textContent = formatAmount(data.month.consume_total);
+                msgBox.innerHTML = '';
+            } catch (e) {
+                showMessage(msgBox, 'error', e.message);
+            }
+        }
+
+        // 用户列表
+        document.getElementById('btnSearchUsers').onclick = () => loadUsers();
+
+        async function loadUsers() {
+            const mobile = document.getElementById('umMobile').value.trim();
+            const qq = document.getElementById('umQq').value.trim();
+            const status = document.getElementById('umStatus').value;
+            const listBox = document.getElementById('userList');
+            const msgBox = document.getElementById('userMgrMsg');
+            listBox.innerHTML = '加载中...';
+            try {
+                const data = await apiRequest('admin', 'user_list', 'POST', {
+                    mobile, qq, status, page: 1, page_size: 50
+                });
+                const rows = data.list || [];
+                if (!rows.length) {
+                    listBox.innerHTML = '<p>暂无数据。</p>';
+                    return;
+                }
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                const table = document.createElement('table');
+                table.className = 'n-table';
+                table.innerHTML = `
+            <thead>
+                <tr><th>用户信息</th><th>余额 (￥)</th><th>状态</th><th>操作</th></tr>
+            </thead>
+            <tbody></tbody>
+        `;
+                const tbody = table.querySelector('tbody');
+                rows.forEach(u => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>
+                            <div style="font-weight:bold;">${u.mobile}</div>
+                            <small style="color:#888;">QQ: ${u.qq}</small>
+                        </td>
+                        <td style="color:#d32f2f; font-weight:bold;">￥${formatAmount(u.balance)}</td>
+                        <td>
+                            ${u.status == 1 ? '<span style="color:#2e7d32;">正常</span>' : '<span style="color:#c62828;">禁用</span>'}
+                            ${u.is_locked == 1 ? '<br><small style="color:#c62828;">锁定</small>' : ''}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-link" data-op="edit">详情</button>
+                            <button class="btn btn-sm btn-link" data-op="adjust">调额</button>
+                            <button class="btn btn-sm btn-link" data-op="card">时长卡</button>
+                            <button class="btn btn-sm btn-link" data-op="ban">${u.status == 1 ? '封禁' : '解封'}</button>
+                            ${u.is_locked == 1 ? '<button class="btn btn-sm btn-link" data-op="unlock">解锁</button>' : ''}
+                        </td>
+                    `;
+                    tr.querySelectorAll('button').forEach(btn => {
+                        const op = btn.getAttribute('data-op');
+                        btn.onclick = async () => {
+                            if (op === 'edit') showUserEditForm(u);
+                            else if (op === 'adjust') adjustBalance(u.id, u.mobile);
+                            else if (op === 'ban') {
+                                const action = u.status == 1 ? '封禁' : '解封';
+                                const ok = await showModal({ title: '确认操作', content: `确定要${action}该用户吗？` });
+                                if (ok) {
+                                    try {
+                                        await apiRequest('admin', u.status == 1 ? 'user_ban' : 'user_unban', 'POST', { user_id: u.id });
+                                        loadUsers();
+                                    } catch (e) { showModal({ title: '错误', content: e.message, showCancel: false }); }
+                                }
+                            } else if (op === 'unlock') {
+                                try {
+                                    await apiRequest('admin', 'user_unlock', 'POST', { user_id: u.id });
+                                    loadUsers();
+                                } catch (e) { showModal({ title: '错误', content: e.message, showCancel: false }); }
+                            } else if (op === 'card') {
+                                showUserCardMgr(u);
+                            }
+                        };
+                    });
+                    tbody.appendChild(tr);
+                });
+                listBox.innerHTML = '';
+                listBox.appendChild(wrapper);
+                wrapper.appendChild(table);
+            } catch (e) {
+                listBox.innerHTML = '';
+                showMessage(msgBox, 'error', e.message);
+            }
+        }
+
+        // 当前在场用户
+        document.getElementById('btnLoadOnline').onclick = async function () {
+            const listBox = document.getElementById('userList');
+            const msgBox = document.getElementById('userMgrMsg');
+            listBox.innerHTML = '加载中...';
+            try {
+                const rows = await apiRequest('admin', 'online_users', 'GET');
+                if (!rows.length) {
+                    listBox.innerHTML = '<p>当前无在场用户。</p>';
+                    return;
+                }
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                const table = document.createElement('table');
+                table.className = 'n-table';
+                table.innerHTML = `
+            <thead>
+                <tr><th>用户ID</th><th>手机号</th><th>QQ</th><th>入场时间</th><th>操作</th></tr>
+            </thead>
+            <tbody></tbody>
+        `;
+                const tbody = table.querySelector('tbody');
+                rows.forEach(r => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                <td>${r.user_id}</td>
+                <td>${r.mobile}</td>
+                <td>${r.qq}</td>
+                <td>${formatDateTime(r.enter_time)}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="forceExit(${r.user_id}, '${r.mobile}')">强制退场</button>
+                </td>
+            `;
+                    tbody.appendChild(tr);
+                });
+                listBox.innerHTML = '';
+                listBox.appendChild(wrapper);
+                wrapper.appendChild(table);
+            } catch (e) {
+                listBox.innerHTML = '';
+                showMessage(msgBox, 'error', e.message);
+            }
+        };
+
+        // 包场管理
+        document.getElementById('btnSearchBookings').onclick = () => loadBookings();
+
+        async function loadBookings() {
+            const listBox = document.getElementById('bookingListAdmin');
+            const msgBox = document.getElementById('bkMgrMsg');
+            listBox.innerHTML = '加载中...';
+            const status = document.getElementById('admBkStatus').value;
+            const date = document.getElementById('admBkDate').value;
+            try {
+                const data = await apiRequest('admin', 'booking_list', 'POST', { status, date });
+                const rows = data || [];
+                if (!rows.length) {
+                    listBox.innerHTML = '<p>暂无记录。</p>';
+                    return;
+                }
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                const table = document.createElement('table');
+                table.className = 'n-table';
+                table.style.width = '100%'; // 强制宽度
+                table.innerHTML = `
+            <thead>
+                <tr>
+                    <th style="width: 60px;">ID</th>
+                    <th>日期/时间</th>
+                    <th>发起人</th>
+                    <th style="width: 80px;">状态</th>
+                    <th style="width: 80px;">操作</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+                const tbody = table.querySelector('tbody');
+                const statusMap = { 0: '待审核', 1: '已通过', 2: '已拒绝', 3: '已取消' };
+                rows.forEach(b => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${b.id}</td>
+                        <td>${b.date}<br><small>${b.start_time}-${b.end_time}</small></td>
+                        <td>${b.mobile || ''}<br><small>QQ:${b.qq || ''}</small></td>
+                        <td>${statusMap[b.status] || b.status}</td>
+                        <td>
+                            <button class="btn btn-link" data-op="review">审核</button>
+                        </td>
+                    `;
+                    tr.querySelector('button').onclick = () => showBookingReview(b);
+                    tbody.appendChild(tr);
+                });
+                listBox.innerHTML = '';
+                listBox.appendChild(wrapper);
+                wrapper.appendChild(table);
+            } catch (e) {
+                listBox.innerHTML = '';
+                showMessage(msgBox, 'error', e.message);
+            }
+        }
+
+        // 系统配置
+        async function loadConfig() {
+            const msgBox = document.getElementById('cfgMsg');
+            try {
+                // 从公共接口获取当前免费分钟数
+                const data = await apiRequest('config', 'public', 'GET');
+                document.getElementById('cfgFreeMinutes').value = data.configs.free_minutes || 5;
+                msgBox.innerHTML = '';
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        // 套餐管理
+        async function loadPlans() {
+            const listBox = document.getElementById('planListAdmin');
+            const msgBox = document.getElementById('planMgrMsg');
+            listBox.innerHTML = '加载中...';
+            try {
+                const rows = await apiRequest('admin', 'plan_list', 'GET');
+                if (!rows.length) { listBox.innerHTML = '<p>暂无数据。</p>'; return; }
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                const table = document.createElement('table');
+                table.className = 'n-table';
+                table.innerHTML = `<thead><tr><th>ID</th><th>名称</th><th>时长(分)</th><th>价格(元)</th><th>有效期(天)</th><th>限购</th><th>状态</th><th>操作</th></tr></thead><tbody></tbody>`;
+                const tbody = table.querySelector('tbody');
+                rows.forEach(p => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${p.id}</td><td>${p.name}</td><td>${p.duration_min}</td><td>${formatAmount(p.price)}</td><td>${p.valid_days}</td><td>${p.max_per_user || '不限'}</td><td>${p.status == 1 ? '上架' : '下架'}</td>
+                        <td><button class="btn btn-link" onclick='editPlan(${JSON.stringify(p)})'>编辑</button> <button class="btn btn-link" onclick="deletePlan(${p.id})">删除</button></td>`;
+                    tbody.appendChild(tr);
+                });
+                listBox.innerHTML = '';
+                listBox.appendChild(wrapper);
+                wrapper.appendChild(table);
+            } catch (e) { showMessage(msgBox, 'error', e.message); }
+        }
+
+        async function showPlanForm(p = null) {
+            const content = `
+                <div class="form-group">
+                    <label>套餐名称</label>
+                    <input type="text" id="planName" value="${p ? p.name : ''}">
+                </div>
+                <div class="form-group">
+                    <label>时长 (分钟)</label>
+                    <input type="number" id="planDuration" value="${p ? p.duration_min : ''}">
+                </div>
+                <div class="form-group">
+                    <label>价格 (元)</label>
+                    <input type="number" id="planPrice" value="${p ? formatAmount(p.price) : ''}">
+                </div>
+                <div class="form-group">
+                    <label>有效期 (天)</label>
+                    <input type="number" id="planValid" value="${p ? p.valid_days : ''}">
+                </div>
+                <div class="form-group">
+                    <label>限购次数 (0不限)</label>
+                    <input type="number" id="planMax" value="${p ? p.max_per_user : 0}">
+                </div>
+                <div class="form-group">
+                    <label>状态</label>
+                    <select id="planStatus">
+                        <option value="1" ${p && p.status == 1 ? 'selected' : ''}>上架</option>
+                        <option value="0" ${p && p.status == 0 ? 'selected' : ''}>下架</option>
+                    </select>
+                </div>
+            `;
+            const ok = await showModal({ title: p ? '编辑套餐' : '新增套餐', content });
+            if (!ok) return;
+
+            const name = document.getElementById('planName').value.trim();
+            const duration_min = document.getElementById('planDuration').value;
+            const price_yuan = document.getElementById('planPrice').value;
+            const valid_days = document.getElementById('planValid').value;
+            const max_per_user = document.getElementById('planMax').value;
+            const status = document.getElementById('planStatus').value;
+
+            if (!name || !duration_min || !price_yuan || !valid_days) {
+                showModal({ title: '提示', content: '请填写完整信息', showCancel: false });
+                return;
+            }
+
+            try {
+                await apiRequest('admin', 'plan_save', 'POST', {
+                    id: p ? p.id : undefined,
+                    name, duration_min,
+                    price: Math.round(price_yuan * 100),
+                    valid_days, max_per_user, status
+                });
+                loadPlans();
+            } catch (e) {
+                showModal({ title: '保存失败', content: e.message, showCancel: false });
+            }
+        }
+
+        async function editPlan(p) {
+            showPlanForm(p);
+        }
+
+        async function deletePlan(id) {
+            const ok = await showModal({ title: '确认删除', content: '确定要删除此套餐吗？此操作不可撤销。' });
+            if (!ok) return;
+            try {
+                await apiRequest('admin', 'plan_delete', 'POST', { id });
+                loadPlans();
+            } catch (e) {
+                showModal({ title: '删除失败', content: e.message, showCancel: false });
+            }
+        }
+
+        // 卡券管理
+        async function loadCards() {
+            const listBox = document.getElementById('cardListAdmin');
+            listBox.innerHTML = '加载中...';
+            try {
+                const data = await apiRequest('admin', 'card_list', 'POST', { page: 1 });
+                const list = data.list || [];
+                if (!list.length) { listBox.innerHTML = '<p>暂无记录。</p>'; return; }
+                const wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                const table = document.createElement('table');
+                table.className = 'n-table';
+                table.innerHTML = `<thead><tr><th>卡密</th><th>面值(元)</th><th>状态</th><th>使用者手机</th><th>过期</th><th>操作</th></tr></thead><tbody></tbody>`;
+                const tbody = table.querySelector('tbody');
+                const statusMap = { 0: '未使用', 1: '已使用', 2: '已作废' };
+                list.forEach(c => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${c.card_no}</td><td>${formatAmount(c.amount)}</td><td>${statusMap[c.status]}</td><td>${c.used_mobile || '-'}</td><td>${c.expire_time.substring(0, 10)}</td>
+                        <td>${c.status == 0 ? `<button class="btn btn-primary btn-sm" onclick="deleteCard(${c.id})">删除</button>` : '-'}</td>`;
+                    tbody.appendChild(tr);
+                });
+                listBox.innerHTML = ''; listBox.appendChild(wrapper); wrapper.appendChild(table);
+            } catch (e) { console.error(e); }
+        }
+
+        document.getElementById('btnGenCards').onclick = async function () {
+            const count = document.getElementById('genCardCount').value;
+            const amount_yuan = document.getElementById('genCardAmount').value;
+            try {
+                await apiRequest('admin', 'card_generate', 'POST', { count, amount: Math.round(amount_yuan * 100) });
+                loadCards();
+            } catch (e) { alert(e.message); }
+        };
+
+        async function deleteCard(id) {
+            try { await apiRequest('admin', 'card_delete', 'POST', { id }); loadCards(); } catch (e) { alert(e.message); }
+        }
+
+        // 公告管理
+        async function loadAnnouncements() {
+            const box = document.getElementById('annListAdmin');
+            try {
+                const list = await apiRequest('admin', 'announcement_list', 'GET');
+                box.innerHTML = '';
+                if (!list.length) {
+                    box.innerHTML = '<p>暂无公告</p>';
+                    return;
+                }
+                list.forEach(a => {
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    div.style.marginBottom = '10px';
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="flex:1;">
+                                <div style="font-weight:500; color:var(--n-text-1);">${a.title}</div>
+                                <div style="font-size:13px; color:var(--n-text-3); margin-top:4px; max-height:40px; overflow:hidden;">${a.content}</div>
+                            </div>
+                            <div style="margin-left:16px; display:flex; gap:8px;">
+                                <button class="btn btn-sm" onclick='showAnnForm(${JSON.stringify(a)})'>编辑</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteAnn(${a.id})">删除</button>
+                            </div>
+                        </div>
+                    `;
+                    box.appendChild(div);
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function showAnnForm(a = null) {
+            const content = `
+                <div class="form-group">
+                    <label>公告标题</label>
+                    <input type="text" id="annTitle" value="${a ? a.title : ''}">
+                </div>
+                <div class="form-group">
+                    <label>公告内容 (支持换行)</label>
+                    <textarea id="annContent" rows="5">${a ? a.content : ''}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>状态</label>
+                    <select id="annStatus">
+                        <option value="1" ${a && a.status == 1 ? 'selected' : ''}>显示</option>
+                        <option value="0" ${a && a.status == 0 ? 'selected' : ''}>隐藏</option>
+                    </select>
+                </div>
+            `;
+            const ok = await showModal({ title: a ? '编辑公告' : '发布新公告', content });
+            if (!ok) return;
+
+            const title = document.getElementById('annTitle').value.trim();
+            const content_text = document.getElementById('annContent').value;
+            const status = document.getElementById('annStatus').value;
+
+            if (!title || !content_text) {
+                showModal({ title: '提示', content: '请填写标题和内容', showCancel: false });
+                return;
+            }
+
+            try {
+                await apiRequest('admin', 'announcement_save', 'POST', {
+                    id: a ? a.id : undefined,
+                    title, content: content_text, status
+                });
+                loadAnnouncements();
+            } catch (e) {
+                showModal({ title: '保存失败', content: e.message, showCancel: false });
+            }
+        }
+
+        async function deleteAnn(id) {
+            const ok = await showModal({ title: '确认删除', content: '确定要删除此公告吗？' });
+            if (!ok) return;
+            try {
+                await apiRequest('admin', 'announcement_delete', 'POST', { id });
+                loadAnnouncements();
+            } catch (e) {
+                showModal({ title: '删除失败', content: e.message, showCancel: false });
+            }
+        }
+
+        // 轮播图管理
+        async function loadBanners() {
+            const box = document.getElementById('bannerListAdmin');
+            try {
+                const list = await apiRequest('admin', 'banner_list', 'GET');
+                box.innerHTML = '';
+                if (!list.length) {
+                    box.innerHTML = '<p>暂无轮播图</p>';
+                    return;
+                }
+                list.forEach(b => {
+                    const div = document.createElement('div');
+                    div.className = 'card';
+                    div.style.marginBottom = '10px';
+                    div.innerHTML = `
+                        <div style="display:flex; align-items:center; justify-content: space-between;">
+                            <div style="display:flex; align-items:center;">
+                                <img src="${b.image_url}" style="width:80px; height:45px; object-fit:cover; border-radius:var(--n-radius); margin-right:16px; border:1px solid var(--n-border);">
+                                <div style="flex:1;">
+                                    <div style="font-weight:500; color:var(--n-text-1);">${b.title || '未命名轮播图'}</div>
+                                    <div style="font-size:12px; color:var(--n-text-3);">排序: ${b.sort_order} | 状态: ${b.status == 1 ? '启用' : '禁用'}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-sm" onclick='showBannerForm(${JSON.stringify(b)})'>编辑</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteBanner(${b.id})">删除</button>
+                            </div>
+                        </div>
+                    `;
+                    box.appendChild(div);
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function showBannerForm(b = null) {
+            const content = `
+                <div class="form-group">
+                    <label>图片 URL</label>
+                    <input type="text" id="banUrl" value="${b ? b.image_url : ''}" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>跳转链接 (可选)</label>
+                    <input type="text" id="banLink" value="${b ? b.link_url : ''}" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>标题 (可选)</label>
+                    <input type="text" id="banTitle" value="${b ? b.title : ''}">
+                </div>
+                <div class="form-group">
+                    <label>排序 (从小到大)</label>
+                    <input type="number" id="banSort" value="${b ? b.sort_order : 0}">
+                </div>
+            `;
+            const ok = await showModal({ title: b ? '编辑轮播图' : '添加轮播图', content });
+            if (!ok) return;
+
+            const image_url = document.getElementById('banUrl').value.trim();
+            const link_url = document.getElementById('banLink').value.trim();
+            const title = document.getElementById('banTitle').value.trim();
+            const sort_order = document.getElementById('banSort').value;
+
+            if (!image_url) {
+                showModal({ title: '提示', content: '请输入图片 URL', showCancel: false });
+                return;
+            }
+
+            try {
+                await apiRequest('admin', 'banner_save', 'POST', {
+                    id: b ? b.id : undefined,
+                    image_url, link_url, title, sort_order, status: 1
+                });
+                loadBanners();
+            } catch (e) {
+                showModal({ title: '保存失败', content: e.message, showCancel: false });
+            }
+        }
+
+        async function adjustBalance(userId, mobile) {
+            const content = `
+                <div style="margin-bottom:15px; background:#f5f5f5; padding:10px; border-radius:4px; font-size:14px;">
+                    用户: <strong>${mobile}</strong>
+                </div>
+                <div class="form-group">
+                    <label>调整金额 (元)</label>
+                    <input type="number" id="adjAmount" placeholder="输入正数充值，负数扣费" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <input type="text" id="adjRemark" placeholder="如: 后台手工补单">
+                </div>
+            `;
+            const ok = await showModal({ title: '调额操作', content });
+            if (!ok) return;
+
+            const amount_yuan = document.getElementById('adjAmount').value;
+            const remark = document.getElementById('adjRemark').value.trim();
+
+            if (!amount_yuan || amount_yuan == 0) return;
+
+            try {
+                await apiRequest('admin', 'user_balance_adjust', 'POST', {
+                    user_id: userId,
+                    amount_yuan,
+                    remark
+                });
+                showModal({ title: '成功', content: '余额调整已生效', showCancel: false });
+                loadUsers();
+            } catch (e) {
+                showModal({ title: '调额失败', content: e.message, showCancel: false });
+            }
+        }
+
+        async function deleteBanner(id) {
+            const ok = await showModal({ title: '确认删除', content: '确定要删除此图片吗？' });
+            if (!ok) return;
+            try {
+                await apiRequest('admin', 'banner_delete', 'POST', { id });
+                loadBanners();
+            } catch (e) {
+                showModal({ title: '删除失败', content: e.message, showCancel: false });
+            }
+        }
+
+        /**
+         * 显示用户编辑模态框
+         */
+        /**
+         * 包场审核详情弹窗
+         */
+        async function showBookingReview(b) {
+            const content = `
+                <div style="font-size:14px; line-height:1.6;">
+                    <p><strong>日期：</strong>${b.date}</p>
+                    <p><strong>时段：</strong>${b.start_time} ~ ${b.end_time}</p>
+                    <p><strong>申请人：</strong>${b.mobile} (QQ: ${b.qq})</p>
+                    <p><strong>用途说明：</strong><br>${(b.purpose || '无').replace(/\n/g, '<br>')}</p>
+                    <p><strong>受邀名单：</strong><br>${(b.invited || '无').replace(/\n/g, '<br>')}</p>
+                    <hr style="margin:10px 0;">
+                    <div class="form-group">
+                        <label>包场费用 (元)</label>
+                        <input type="number" id="revPrice" value="${formatAmount(b.price)}" readonly tabindex="-1" style="background:#f0f0f0;">
+                    </div>
+                    <div class="form-group">
+                        <label>审核操作</label>
+                        <select id="revAction">
+                            <option value="approve">通过申请</option>
+                            <option value="reject">拒绝申请</option>
+                            <option value="cancel">取消/撤销申请</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            const ok = await showModal({ title: '包场申请详情及审核', content });
+            if (!ok) return;
+
+            const review_action = document.getElementById('revAction').value;
+            const price_yuan = document.getElementById('revPrice').value;
+            try {
+                await apiRequest('admin', 'booking_review', 'POST', {
+                    booking_id: b.id,
+                    review_action,
+                    price_yuan: document.getElementById('revPrice').value,
+                    remark: '后台操作审核'
+                });
+                showModal({ title: '处理成功', content: '申请已处理完成', showCancel: false });
+                loadBookings();
+            } catch (e) {
+                showModal({ title: '审核失败', content: e.message, showCancel: false });
+            }
+        }
+
+        async function adjustBalance(userId, mobile) {
+            const content = `
+                <div style="margin-bottom:15px; background:#f5f5f5; padding:10px; border-radius:4px; font-size:14px;">
+                    用户: <strong>${mobile}</strong>
+                </div>
+                <div class="form-group">
+                    <label>调整金额 (元)</label>
+                    <input type="number" id="adjAmount" placeholder="正数增加，负数减少" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <input type="text" id="adjRemark" placeholder="备注调整原因">
+                </div>
+            `;
+            const ok = await showModal({ title: '调整金额', content });
+            if (!ok) return;
+
+            const amount_yuan = document.getElementById('adjAmount').value;
+            const remark = document.getElementById('adjRemark').value.trim();
+
+            if (!amount_yuan || amount_yuan == 0) return;
+
+            try {
+                await apiRequest('admin', 'user_balance_adjust', 'POST', {
+                    user_id: userId,
+                    amount_yuan,
+                    remark
+                });
+                showModal({ title: '成功', content: '余额调整已生效', showCancel: false });
+                loadUsers();
+            } catch (e) {
+                showModal({ title: '失败', content: e.message, showCancel: false });
+            }
+        }
+
+        /**
+         * 显示用户编辑模态框
+         */
+        async function showUserEditForm(u) {
+            const content = `
+                <div class="form-group">
+                    <label>手机号</label>
+                    <input type="text" id="editUMobile" value="${u.mobile}">
+                </div>
+                <div class="form-group">
+                    <label>QQ 号</label>
+                    <input type="text" id="editUQq" value="${u.qq}">
+                </div>
+                <div class="form-group">
+                    <label>重置密码 (留空不修改)</label>
+                    <input type="password" id="editUPass" placeholder="6位数字" maxlength="6">
+                </div>
+                <div style="font-size:12px; color:#666; margin-top:10px;">
+                    注册 IP: ${u.register_ip || '未知'}<br>
+                    注册设备: ${u.register_device || '未知'}
+                </div>
+            `;
+            const ok = await showModal({ title: '编辑用户信息', content });
+            if (!ok) return;
+
+            const mobile = document.getElementById('editUMobile').value.trim();
+            const qq = document.getElementById('editUQq').value.trim();
+            const password = document.getElementById('editUPass').value.trim();
+
+            try {
+                await apiRequest('admin', 'user_update', 'POST', {
+                    user_id: u.id, mobile, qq, password
+                });
+                showModal({ title: '成功', content: '用户信息已更新', showCancel: false });
+                loadUsers();
+            } catch (e) {
+                showModal({ title: '操作失败', content: e.message, showCancel: false });
+            }
+        }
+
+        async function loadConfig() {
+            try {
+                // 使用 config/public 接口获取配置
+                const cfg = await apiRequest('config', 'public', 'GET');
+
+                // 动态设置页面标题
+                if (cfg.system_name) {
+                    const pageTitle = document.getElementById('adminPageTitle');
+                    if (pageTitle) pageTitle.textContent = cfg.system_name + ' - 管理员后台';
+                    document.title = cfg.system_name + ' - 管理员后台';
+                }
+
+                // 加载基础配置
+                document.getElementById('cfgFreeMinutes').value = cfg.configs?.free_minutes || 0;
+                document.getElementById('cfgSystemName').value = cfg.configs?.system_name || '场地计费系统';
+                document.getElementById('cfgBillingMinutes').value = cfg.configs?.billing_minutes || 60;
+                document.getElementById('cfgBillingAmount').value = cfg.configs?.billing_amount || 0;
+                document.getElementById('cfgBookingGraceMinutes').value = cfg.configs?.booking_grace_minutes || 5;
+
+                // 加载管理员QQ号
+                const adminInfo = await apiRequest('admin', 'me', 'GET');
+                document.getElementById('cfgAdminQQ').value = adminInfo.qq || '';
+
+                // 加载favicon配置
+                document.getElementById('cfgLoginFavicon').value = cfg.configs?.login_favicon || '';
+                document.getElementById('cfgUserFavicon').value = cfg.configs?.user_favicon || '';
+                document.getElementById('cfgAdminFavicon').value = cfg.configs?.admin_favicon || '';
+
+                // 应用favicon
+                const faviconUrl = cfg.configs?.admin_favicon;
+                if (faviconUrl && faviconUrl.trim()) {
+                    document.getElementById('favicon').href = faviconUrl;
+                }
+
+                // 加载SMTP配置
+                document.getElementById('cfgSmtpHost').value = cfg.configs?.smtp_host || '';
+                document.getElementById('cfgSmtpPort').value = cfg.configs?.smtp_port || 587;
+                document.getElementById('cfgSmtpUser').value = cfg.configs?.smtp_user || '';
+                document.getElementById('cfgSmtpPass').value = cfg.configs?.smtp_pass || '';
+                document.getElementById('cfgSmtpFrom').value = cfg.configs?.smtp_from || '';
+                document.getElementById('cfgSmtpFromName').value = cfg.configs?.smtp_from_name || '';
+
+                if (cfg.configs?.system_name) {
+                    document.title = cfg.configs.system_name + ' - 管理员后台';
+                    const titleEl = document.querySelector('.top-bar-title');
+                    if (titleEl) titleEl.textContent = cfg.configs.system_name + '管理中心';
+                }
+            } catch (e) { console.error('加载配置失败:', e); }
+        }
+
+        document.getElementById('btnSaveConfig').onclick = async function () {
+            const free_minutes = document.getElementById('cfgFreeMinutes').value;
+            const system_name = document.getElementById('cfgSystemName').value.trim();
+            const admin_qq = document.getElementById('cfgAdminQQ').value.trim();
+            const billing_minutes = document.getElementById('cfgBillingMinutes').value;
+            const billing_amount = document.getElementById('cfgBillingAmount').value;
+            const booking_grace_minutes = document.getElementById('cfgBookingGraceMinutes').value;
+            const login_favicon = document.getElementById('cfgLoginFavicon').value.trim();
+            const user_favicon = document.getElementById('cfgUserFavicon').value.trim();
+            const admin_favicon = document.getElementById('cfgAdminFavicon').value.trim();
+            try {
+                // 保存配置（免费时长 + 系统名称 + 计费规则 + favicon + 包场缓冲时间）
+                await apiRequest('admin', 'set_free_minutes', 'POST', {
+                    minutes: free_minutes,
+                    system_name: system_name,
+                    billing_minutes: billing_minutes,
+                    billing_amount: billing_amount,
+                    booking_grace_minutes: booking_grace_minutes,
+                    login_favicon: login_favicon,
+                    user_favicon: user_favicon,
+                    admin_favicon: admin_favicon
+                });
+
+                // 保存管理员QQ号
+                if (admin_qq) {
+                    await apiRequest('admin', 'update_avatar', 'POST', { qq: admin_qq });
+                    // 更新管理员头像显示
+                    document.getElementById('adminAvatarImg').src = `https://q1.qlogo.cn/g?b=qq&nk=${admin_qq}&s=100`;
+                }
+
+                showModal({ title: '成功', content: '系统配置已保存', showCancel: false });
+                await loadConfig(); // 确保配置重新加载
+            } catch (e) { showModal({ title: '保存失败', content: e.message, showCancel: false }); }
+        };
+
+        // 保存SMTP设置
+        document.getElementById('btnSaveSmtp').onclick = async function () {
+            const smtp_host = document.getElementById('cfgSmtpHost').value.trim();
+            const smtp_port = document.getElementById('cfgSmtpPort').value;
+            const smtp_user = document.getElementById('cfgSmtpUser').value.trim();
+            const smtp_pass = document.getElementById('cfgSmtpPass').value.trim();
+            const smtp_from = document.getElementById('cfgSmtpFrom').value.trim();
+            const smtp_from_name = document.getElementById('cfgSmtpFromName').value.trim();
+            
+            try {
+                await apiRequest('admin', 'save_smtp_config', 'POST', {
+                    smtp_host, smtp_port, smtp_user, smtp_pass, smtp_from, smtp_from_name
+                });
+                showModal({ title: '成功', content: 'SMTP配置已保存', showCancel: false });
+            } catch (e) { showModal({ title: '保存失败', content: e.message, showCancel: false }); }
+        };
+
+        // 测试SMTP发送
+        document.getElementById('btnTestSmtp').onclick = async function () {
+            const test_email = await showModal({ 
+                title: '测试发送', 
+                content: '<input type="email" id="testEmail" placeholder="请输入测试邮箱地址" style="width:100%;padding:8px;">', 
+                showCancel: true 
+            });
+            
+            if (test_email) {
+                const email = document.getElementById('testEmail').value.trim();
+                if (!email) {
+                    showModal({ title: '提示', content: '请输入邮箱地址', showCancel: false });
+                    return;
+                }
+                
+                try {
+                    await apiRequest('admin', 'test_smtp', 'POST', { email });
+                    showModal({ title: '成功', content: '测试邮件已发送，请检查收件箱', showCancel: false });
+                } catch (e) { showModal({ title: '发送失败', content: e.message, showCancel: false }); }
+            }
+        };
+
+        // 查看邮件日志
+        document.getElementById('btnViewEmailLogs').onclick = async function () {
+            try {
+                const res = await apiRequest('admin', 'email_logs', 'GET');
+                const logs = res.list || [];
+                let html = '<div style="max-height: 400px; overflow-y: auto;"><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f5f5f5;"><th>时间</th><th>收件人</th><th>主题</th><th>状态</th></tr></thead><tbody>';
+                logs.forEach(log => {
+                    html += `<tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:8px;">${new Date(log.created_at).toLocaleString()}</td>
+                        <td style="padding:8px;">${log.to_email}</td>
+                        <td style="padding:8px;">${log.subject}</td>
+                        <td style="padding:8px;color:${log.status ? 'green' : 'red'}">${log.status ? '成功' : '失败'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table></div>';
+                showModal({ title: '邮件发送日志', content: html || '暂无日志', showCancel: false });
+            } catch (e) { showModal({ title: '加载失败', content: e.message, showCancel: false }); }
+        };
+
+        // 兼容旧调用名 (如有)
+        async function loadConfigLegacy() { loadConfig(); }
+        async function saveConfig() { document.getElementById('btnSaveConfig').click(); }
+
+        async function forceExit(userId, mobile) {
+            const content = `
+                <div style="margin-bottom:15px;">
+                    确定要强制用户 <strong>${mobile}</strong> 退场吗？
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="feIsCharge" checked> 是否计算费用并扣费</label>
+                </div>
+            `;
+            const ok = await showModal({ title: '强制退场确认', content });
+            if (!ok) return;
+
+            const is_charge = document.getElementById('feIsCharge').checked ? 1 : 0;
+            try {
+                await apiRequest('admin', 'force_exit', 'POST', { user_id: userId, is_charge });
+                showModal({ title: '成功', content: '已执行强制退场', showCancel: false });
+                document.getElementById('btnLoadOnline').click();
+            } catch (e) {
+                showModal({ title: '操作失败', content: e.message, showCancel: false });
+            }
+        }
+
+        async function showSlotMgr() {
+            const content = `
+                <div id="slotMgrList" style="margin-bottom:15px; max-height:300px; overflow-y:auto;">加载中...</div>
+                <button class="btn btn-sm" onclick="showSlotForm()">添加新时段</button>
+            `;
+            showModal({ title: '包场时间段管理', content, showCancel: false });
+            // 不应 await showModal，因为它只有在关闭时才会 resolve
+            loadSlots();
+        }
+
+        async function loadSlots() {
+            const box = document.getElementById('slotMgrList');
+            if (!box) return;
+            try {
+                const list = await apiRequest('admin', 'slot_list', 'GET');
+                if (!list.length) { box.innerHTML = '<p>暂无时段，请手动添加。</p>'; return; }
+                box.innerHTML = `
+                    <div class="table-wrapper">
+                        <table class="n-table" style="font-size:12px;">
+                            <thead><tr><th>名称</th><th>时间</th><th>操作</th></tr></thead>
+                            <tbody>${list.map(s => `
+                                <tr>
+                                    <td>${s.name}</td>
+                                    <td>${s.start_time.substring(0, 5)}-${s.end_time.substring(0, 5)}</td>
+                                    <td>
+                                        <button class="btn btn-sm" onclick='showSlotForm(${JSON.stringify(s)})'>编</button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteSlot(${s.id})">删</button>
+                                    </td>
+                                </tr>
+                            `).join('')}</tbody></table></div>`;
+            } catch (e) { box.innerHTML = e.message; }
+        }
+
+        async function showSlotForm(s = null) {
+            const content = `
+                <div class="form-group">
+                    <label>时段名称</label>
+                    <input type="text" id="slotName" value="${s ? s.name : ''}" placeholder="如：上午场">
+                </div>
+                <div class="form-group">
+                    <label>开始时间 (HH:MM)</label>
+                    <input type="text" id="slotStart" value="${s ? s.start_time.substring(0, 5) : '08:00'}">
+                </div>
+                <div class="form-group">
+                    <label>结束时间 (HH:MM)</label>
+                    <input type="text" id="slotEnd" value="${s ? s.end_time.substring(0, 5) : '12:00'}">
+                </div>
+                <div class="form-group">
+                    <label>场次费用 (元)</label>
+                    <input type="number" id="slotPrice" value="${s ? formatAmount(s.price) : '0'}" step="0.01">
+                </div>
+            `;
+            const ok = await showModal({ title: s ? '编辑时段' : '添加时段', content });
+            if (!ok) return;
+
+            try {
+                await apiRequest('admin', 'slot_save', 'POST', {
+                    id: s ? s.id : 0,
+                    name: document.getElementById('slotName').value,
+                    start_time: document.getElementById('slotStart').value,
+                    end_time: document.getElementById('slotEnd').value,
+                    price_yuan: document.getElementById('slotPrice').value,
+                    max_people: 0, status: 1
+                });
+                showSlotMgr(); // 刷新列表
+            } catch (e) { alert(e.message); }
+        }
+
+        async function deleteSlot(id) {
+            if (!confirm('确定删除？')) return;
+            try {
+                await apiRequest('admin', 'slot_delete', 'POST', { id });
+                showSlotMgr();
+            } catch (e) { alert(e.message); }
+        }
+
+        // --- 用户时长卡管理系统 ---
+        async function showUserCardMgr(u) {
+            const content = `
+                <div style="background:#f9f9f9; padding:10px; border-radius:4px; margin-bottom:15px; font-size:14px;">
+                    用户: <strong>${u.mobile}</strong> (ID: ${u.id})
+                </div>
+                <div id="userCardList" style="max-height:300px; overflow-y:auto; margin-bottom:15px;">加载中...</div>
+                <button class="btn btn-sm" onclick="showAddUserCardForm(${u.id})">添加定制时长卡</button>
+            `;
+            showModal({ title: '用户时长卡管理', content, showCancel: false });
+            loadUserCards(u.id);
+        }
+
+        async function loadUserCards(userId) {
+            const box = document.getElementById('userCardList');
+            if (!box) return;
+            try {
+                const list = await apiRequest('admin', 'user_card_list', 'GET', { user_id: userId });
+                if (!list.length) {
+                    box.innerHTML = '<p style="color:#888;">暂无时长卡记录。</p>';
+                    return;
+                }
+                let html = `
+                    <div class="table-wrapper">
+                        <table class="n-table" style="font-size:12px;">
+                            <thead><tr><th>名称/ID</th><th>剩余/总计</th><th>状态</th><th>操作</th></tr></thead>
+                            <tbody>`;
+                list.forEach(c => {
+                    const statusText = c.status == 1 ? '<span class="text-success">有效</span>' : '<span class="text-danger">失效</span>';
+                    html += `
+                        <tr>
+                            <td>${c.plan_name || '定制卡'}<br><small>#${c.id}</small></td>
+                            <td>${c.remaining_min}/${c.total_min}</td>
+                            <td>${statusText}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" onclick="deleteUserCard(${c.id}, ${userId})">删</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table></div>`;
+                box.innerHTML = html;
+            } catch (e) { box.innerHTML = `<span style="color:red;">${e.message}</span>`; }
+        }
+
+        async function showAddUserCardForm(userId) {
+            const content = `
+                <div class="form-group">
+                    <label>赠送分钟数</label>
+                    <input type="number" id="addCardMin" value="60">
+                </div>
+                <div class="form-group">
+                    <label>有效天数</label>
+                    <input type="number" id="addCardDays" value="30">
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <input type="text" id="addCardRemark" value="管理员后台赠送">
+                </div>
+            `;
+            const ok = await showModal({ title: '添加定制卡', content });
+            if (!ok) return;
+
+            const minutes = document.getElementById('addCardMin').value;
+            const validDays = document.getElementById('addCardDays').value;
+            const remark = document.getElementById('addCardRemark').value;
+
+            try {
+                await apiRequest('admin', 'user_card_add', 'POST', { user_id: userId, minutes, valid_days: validDays, remark });
+                loadUserCards(userId);
+            } catch (e) { alert(e.message); }
+        }
+
+        async function deleteUserCard(cardId, userId) {
+            if (!confirm('确定要删除这张时长卡吗？此操作不可逆！')) return;
+            try {
+                await apiRequest('admin', 'user_card_delete', 'POST', { card_id: cardId });
+                loadUserCards(userId);
+            } catch (e) { alert(e.message); }
+        }
+
+        // 标签切换
+        document.querySelectorAll('.tab-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                const tabId = item.getAttribute('data-tab');
+
+                document.querySelectorAll('#tab-overview, #tab-users, #tab-bookings, #tab-products, #tab-plans, #tab-cards, #tab-announcements, #tab-banners, #tab-logs, #tab-config')
+                    .forEach(div => div.style.display = 'none');
+
+                const target = document.getElementById(tabId);
+                if (target) target.style.display = '';
+
+                // 切换时加载数据
+                if (tabId === 'tab-products') loadProducts();
+                if (tabId === 'tab-plans') loadPlans();
+                if (tabId === 'tab-cards') loadCards();
+                if (tabId === 'tab-announcements') loadAnnouncements();
+                if (tabId === 'tab-banners') loadBanners();
+                // --- 操作日志 ---
+                const ACTION_NAME_MAP = {
+                    'user_register': '用户注册',
+                    'user_login': '用户登录',
+                    'user_exit_and_pay': '用户出场结算',
+                    'user_enter': '用户入场',
+                    'user_locked_by_password_error': '密码错误锁定',
+                    'user_reset_password': '用户重置密码',
+                    'buy_time_card': '购买时长卡',
+                    'recharge_by_card': '卡密充值',
+                    'admin_login': '管理员登录',
+                    'admin_update_user': '编辑用户信息',
+                    'admin_ban_user': '封禁用户',
+                    'admin_unban_user': '解封用户',
+                    'admin_unlock_user': '解锁用户',
+                    'admin_adjust_balance': '调整用户余额',
+                    'admin_force_exit': '强制用户退场',
+                    'create_product': '创建商品',
+                    'update_product': '更新商品',
+                    'delete_product': '删除商品',
+                    'admin_booking_approve': '审核通过包场',
+                    'admin_booking_reject': '拒绝包场申请',
+                    'admin_create_plan': '创建套餐',
+                    'admin_update_plan': '更新套餐',
+                    'admin_delete_plan': '删除套餐',
+                    'admin_save_plan': '保存套餐',
+                    'admin_gen_cards': '批量生成卡券',
+                    'admin_create_announcement': '发布公告',
+                    'admin_delete_announcement': '删除公告',
+                    'admin_save_slot': '保存时段配置',
+                    'admin_delete_slot': '删除时段配置',
+                    'admin_set_free_minutes': '修改系统配置',
+                    'admin_user_card_add': '赠送时长卡',
+                    'admin_user_card_delete': '删除时长卡',
+                    'admin_booking_review': '包场审核',
+                    'admin_balance_adjust': '余额调整',
+                    'admin_product_edit': '商品编辑',
+                    'admin_product_delete': '商品删除',
+                    'admin_timecard_issue': '时长卡发放',
+                    'admin_announcement_edit': '公告编辑',
+                    'admin_banner_edit': '轮播图编辑',
+                    'admin_config_update': '配置更新',
+                    'admin_save_smtp_config': '保存SMTP配置',
+                    'admin_add_user_card': '赠送时长卡',
+                    'admin_delete_user_card': '删除时长卡',
+                    'admin_set_config': '修改系统配置',
+                    'booking_apply': '包场申请',
+                    'booking_update': '包场修改',
+                    'user_entrance': '用户入场',
+                    'user_exit': '用户出场',
+                    'product_buy': '购买商品',
+                    'timecard_buy': '购买时长卡',
+                    'card_recharge': '充值卡充值'
+                };
+
+                let currentLogPage = 1;
+
+                // 将loadLogs函数提升到全局作用域
+                window.loadLogs = async function(page = 1) {
+                    currentLogPage = page;
+                    const box = document.getElementById('logListAdmin');
+                    const paginationBox = document.getElementById('logPagination');
+                    box.innerHTML = '<p>加载中...</p>';
+                    paginationBox.innerHTML = '';
+
+                    // 获取搜索关键词
+                    const searchKeyword = document.getElementById('logSearchInput') ? document.getElementById('logSearchInput').value.trim() : '';
+
+                    try {
+                        const params = { page, page_size: 30 };
+                        if (searchKeyword) {
+                            params.search = searchKeyword;
+                        }
+
+                        const res = await apiRequest('admin', 'operation_logs', 'GET', params);
+                        const list = res.list || [];
+                        const total = res.total || 0;
+
+                        if (!list.length) {
+                            box.innerHTML = '<p>暂无日志记录。</p>';
+                            return;
+                        }
+
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'table-wrapper';
+                        const table = document.createElement('table');
+                        table.className = 'n-table';
+                        table.style.width = '100%';
+                        table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">ID</th>
+                            <th>角色</th>
+                            <th>操作人</th>
+                            <th>操作内容</th>
+                            <th>详情</th>
+                            <th>IP</th>
+                            <th>时间</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+                        const tbody = table.querySelector('tbody');
+
+                        list.forEach(log => {
+                            const tr = document.createElement('tr');
+                            const roleText = log.actor_type == 2
+                                ? '<span style="color:#e67e22;font-weight:bold;">管理员</span>'
+                                : '<span style="color:#2980b9;">用户</span>';
+                            const actorName = log.actor_name || ('ID:' + log.actor_id);
+                            const actionCn = ACTION_NAME_MAP[log.action] || log.action;
+
+                            // 将 detail JSON 转为可读文本
+                            let detailText = '';
+                            try {
+                                const d = typeof log.detail === 'string' ? JSON.parse(log.detail) : (log.detail || {});
+                                const parts = [];
+                                for (const [k, v] of Object.entries(d)) {
+                                    const keyMap = {
+                                        'mobile': '手机号', 'user_id': '用户ID', 'id': 'ID',
+                                        'name': '名称', 'username': '账号', 'entrance_id': '进场ID',
+                                        'amount_yuan': '金额(元)', 'remark': '备注',
+                                        'minutes': '分钟', 'plan_id': '套餐ID',
+                                        'duration_min': '时长(分钟)', 'charge_amount': '收费金额(元)',
+                                        'discount_amount': '折扣金额(元)', 'actual_amount': '实际金额(元)',
+                                        'balance_after': '余额(元)', 'booking_id': '包场ID',
+                                        'action': '操作', 'review_action': '审核操作',
+                                        'status': '状态', 'type': '类型', 'qq': 'QQ号',
+                                        'product_id': '商品ID', 'quantity': '数量',
+                                        'card_no': '充值卡号', 'amount': '金额',
+                                        'is_booking': '包场入场', 'refund': '退款(元)',
+                                        'price': '价格(元)', 'cost': '费用(元)',
+                                        'target_user_id': '目标用户ID', 'expire': '到期时间',
+                                        'new_balance': '新余额(元)', 'card_id': '卡ID',
+                                        'system_name': '系统名称', 'billing_minutes': '计费分钟数',
+                                        'billing_amount': '计费金额(元)', 'login_favicon': '登录图标',
+                                        'user_favicon': '用户图标', 'admin_favicon': '管理员图标'
+                                    };
+                                    let value = v;
+                                    // 货币数值除以100转换为元
+                                    if (['amount', 'charge_amount', 'discount_amount', 'actual_amount', 'balance_after', 'refund', 'price', 'cost', 'new_balance', 'billing_amount'].includes(k)) {
+                                        value = (Number(v) / 100).toFixed(2);
+                                    }
+                                    parts.push((keyMap[k] || k) + ':' + value);
+                                }
+                                detailText = parts.join(', ');
+                            } catch (e) { detailText = String(log.detail || ''); }
+
+                            const timeStr = (log.created_at || '').substring(0, 19);
+
+                            tr.innerHTML = `
+                        <td>${log.id}</td>
+                        <td>${roleText}</td>
+                        <td>${actorName}</td>
+                        <td><strong>${actionCn}</strong></td>
+                        <td style="font-size:12px;color:#666;max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="${detailText}">${detailText || '-'}</td>
+                        <td style="font-size:12px;">${log.ip || '-'}</td>
+                        <td style="font-size:12px;white-space:nowrap;">${timeStr}</td>
+                    `;
+                            tbody.appendChild(tr);
+                        });
+
+                        box.innerHTML = '';
+                        wrapper.appendChild(table);
+                        box.appendChild(wrapper);
+
+                        // 改进的分页
+                        const totalPages = Math.ceil(total / 30);
+                        if (totalPages > 1) {
+                            let pagHtml = '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">';
+
+                            // 上一页
+                            if (page > 1) {
+                                pagHtml += `<button class="btn btn-sm" onclick="loadLogs(${page - 1})">上一页</button>`;
+                            }
+
+                            // 动态计算需要显示的页码数量
+                            let maxPageButtons = totalPages;
+                            if (totalPages > 20) {
+                                maxPageButtons = 10;
+                            } else if (totalPages > 15) {
+                                maxPageButtons = 8;
+                            } else if (totalPages > 10) {
+                                maxPageButtons = 6;
+                            } else {
+                                maxPageButtons = totalPages;
+                            }
+
+                            let pagesToShow = [];
+
+                            if (totalPages <= maxPageButtons) {
+                                // 总页数少，全部显示
+                                for (let i = 1; i <= totalPages; i++) {
+                                    pagesToShow.push(i);
+                                }
+                            } else {
+                                // 总页数多，智能显示
+                                // 始终显示第一页和最后一页
+                                pagesToShow.push(1);
+
+                                // 如果第一页和当前页之间有间隔，显示省略号
+                                if (page > 2) {
+                                    pagesToShow.push('...');
+                                }
+
+                                // 显示当前页附近的页码
+                                let startPage = Math.max(2, page - Math.floor((maxPageButtons - 2) / 2));
+                                let endPage = Math.min(totalPages - 1, startPage + maxPageButtons - 3);
+
+                                if (endPage - startPage < maxPageButtons - 3) {
+                                    startPage = Math.max(2, endPage - maxPageButtons + 3);
+                                }
+
+                                for (let i = startPage; i <= endPage; i++) {
+                                    pagesToShow.push(i);
+                                }
+
+                                // 如果最后一页和当前页之间有间隔，显示省略号
+                                if (page < totalPages - 1) {
+                                    pagesToShow.push('...');
+                                }
+
+                                pagesToShow.push(totalPages);
+                            }
+
+                            // 渲染页码
+                            for (let i = 0; i < pagesToShow.length; i++) {
+                                const p = pagesToShow[i];
+                                if (p === '...') {
+                                    pagHtml += `<span style="color:#666;">...</span>`;
+                                } else {
+                                    const activeStyle = p === page ? 'background:#18a058;color:white;' : '';
+                                    pagHtml += `<button class="btn btn-sm" style="${activeStyle}" onclick="loadLogs(${p})">${p}</button>`;
+                                }
+                            }
+
+                            // 下一页
+                            if (page < totalPages) {
+                                pagHtml += `<button class="btn btn-sm" onclick="loadLogs(${page + 1})">下一页</button>`;
+                            }
+
+                            // 跳转输入框
+                            pagHtml += `<div style="display:flex;align-items:center;gap:4px;margin-left:8px;">`;
+                            pagHtml += `<input type="number" id="jumpPageInput" min="1" max="${totalPages}" style="width:60px;padding:6px 8px;border:1px solid #ddd;border-radius:4px;" placeholder="跳转到...">`;
+                            pagHtml += `<button class="btn btn-sm" style="background:#18a058;color:white;" onclick="jumpToPage(${totalPages})">跳转</button>`;
+                            pagHtml += `</div>`;
+
+                            pagHtml += `<span style="margin-left:8px;font-size:13px;color:#666;">第 ${page} / ${totalPages} 页 (共${total}条)</span>`;
+                            pagHtml += '</div>';
+
+                            paginationBox.innerHTML = pagHtml;
+                        }
+
+                    } catch (e) {
+                        box.innerHTML = `<p style="color:red;">加载失败: ${e.message}</p>`;
+                    }
+                };
+
+                // 跳转到指定页
+                window.jumpToPage = function(totalPages) {
+                    const input = document.getElementById('jumpPageInput');
+                    const page = parseInt(input.value);
+                    if (isNaN(page) || page < 1 || page > totalPages) {
+                        alert('请输入有效的页码');
+                        return;
+                    }
+                    loadLogs(page);
+                };
+
+                if (tabId === 'tab-logs') loadLogs();
+                if (tabId === 'tab-config') loadConfig();
+                if (tabId === 'tab-users') loadUsers();
+                if (tabId === 'tab-bookings') loadBookings();
+            });
+        });
+
+        // QQ设置功能
+        function showSetQQForm() {
+            document.getElementById('qqModal').style.display = 'flex';
+            document.getElementById('dropdownAdminName').click(); // 关闭下拉菜单
+        }
+
+        async function updateQQ() {
+            const qq = document.getElementById('qqNumber').value.trim();
+            if (!/^\d{5,12}$/.test(qq)) {
+                alert('QQ号格式错误，请输入5-12位数字');
+                return;
+            }
+
+            try {
+                await apiRequest('admin', 'update_avatar', 'POST', { qq });
+                document.getElementById('qqModal').style.display = 'none';
+                document.getElementById('adminAvatarImg').src = `https://q1.qlogo.cn/g?b=qq&nk=${qq}&s=100`;
+                showModal({ title: '成功', content: 'QQ号已更新，头像已同步', showCancel: false });
+            } catch (e) {
+                alert('更新失败: ' + e.message);
+            }
+        }
+
+        // 初始化
+        tryAutoLogin();
+    </script>
+</body>
+
+</html>
