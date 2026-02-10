@@ -15,144 +15,164 @@
 ### 1. 用户端
 
 #### 1.1 用户注册与登录
+
 - 支持手机号注册
 - QQ号同步头像
 - 邮箱验证码验证（60秒发送限制）
 - 密码重置功能
 
-![用户注册登录界面](<img width="720" alt="image" src="https://github.com/user-attachments/assets/338cca31-dfdc-432d-a8dc-be6d7e399816" />
-)
+![1770751137725.png](https://1.888440.xyz/global-free/2026/02/11/26/698b85666562f.png)
+
+![1770751143928.png](https://1.888440.xyz/global-free/2026/02/11/26/698b85661eb89.png)
+
 
 #### 1.2 包场功能
+
 - 包场申请：选择日期、时间段
 - 包场审核：管理员审核通过/拒绝
 - 包场邀请：邀请好友参加包场
 - 包场期间免费入场
 - 包场缓冲时间：5分钟免费出场
 
-![包场申请界面](<img width="720" alt="image" src="https://github.com/user-attachments/assets/24d05aa2-655d-4ba9-9ca0-2257c4796d54" />
-)
-![包场中界面1](<img width="720" alt="image" src="https://github.com/user-attachments/assets/c3cdf03d-5eed-4d6f-ad35-5df77b36c0ac" />
-)
-![包场中界面2](<img width="720" alt="image" src="https://github.com/user-attachments/assets/c3cdf03d-5eed-4d6f-ad35-5df77b36c0ac" />
-)
-![包场中界面3](<img width="720" alt="image" src="https://github.com/user-attachments/assets/c3cdf03d-5eed-4d6f-ad35-5df77b36c0ac" />
-)
+![1770751179513.png](https://1.888440.xyz/global-free/2026/02/11/26/698b856653f30.png)
+
+![1770751214887.png](https://1.888440.xyz/global-free/2026/02/11/26/698b856cd62be.png)
+
+![1770751201328.png](https://1.888440.xyz/global-free/2026/02/11/26/698b856bd2213.png)
 
 #### 1.3 时长卡购买
+
 - 多种时长套餐可选
 - 余额支付
 - 购买成功后自动到账
 
-![时长卡购买界面](./images/timecard-buy.png)
+![1770751232059.png](https://1.888440.xyz/global-free/2026/02/11/26/698b856d51b16.png)
 
 #### 1.4 商品购买
+
 - 商品列表展示
 - 库存管理
 - 余额支付购买
 
-![商品购买界面](./images/product-buy.png)
+![1770751243251.png](https://1.888440.xyz/global-free/2026/02/11/26/698b857436817.png)
 
 #### 1.5 充值卡充值
+
 - 输入充值卡号
 - 自动充值到余额
 
-![充值卡充值界面](./images/card-recharge.png)
+![1770751262590.png](https://1.888440.xyz/global-free/2026/02/11/26/698b857567cbd.png)
 
 #### 1.6 入场与出场
-- 扫码入场
+
+- 自助入场
 - 自动计费
 - 余额扣费
 - 出场结算
 
-![入场界面](./images/entrance.png)
-![出场结算界面](./images/exit.png)
+![1770751277295.png](https://1.888440.xyz/global-free/2026/02/11/26/698b857648f30.png)
+
+![1770751285819.png](https://1.888440.xyz/global-free/2026/02/11/26/698b857874ff5.png)
 
 #### 1.7 个人中心
+
 - 个人信息管理
 - 余额查询
 - 操作记录查看
 - 包场记录查看
 
-![个人中心界面](./images/user-profile.png)
+![1770751300026.png](https://1.888440.xyz/global-free/2026/02/11/26/698b857990e7b.png)
 
 ### 2. 管理员端
 
 #### 2.1 系统概览
+
 - 用户统计
 - 在线用户
 - 今日交易
 - 系统状态
 
-![系统概览界面](./images/admin-overview.png)
+![1770751316767.png](https://1.888440.xyz/global-free/2026/02/11/26/698b857ac52a3.png)
 
 #### 2.2 用户管理
+
 - 用户列表
 - 用户信息编辑
 - 余额调整
 - 封禁/解封用户
 - 赠送时长卡
 
-![用户管理界面](./images/admin-users.png)
+![1770751330959.png](https://1.888440.xyz/global-free/2026/02/11/26/698b857cbf27c.png)
 
 #### 2.3 商品管理
+
 - 商品添加/编辑/删除
 - 库存管理
 - 价格设置
 
-![商品管理界面](./images/admin-products.png)
+![1770751388168.png](https://1.888440.xyz/global-free/2026/02/11/26/698b85e155f00.png)
 
 #### 2.4 时长卡管理
+
 - 套餐创建/编辑/删除
 - 批量生成卡券
 - 卡券发放
 
-![时长卡管理界面](./images/admin-timecards.png)
+![1770751377019.png](https://1.888440.xyz/global-free/2026/02/11/26/698b85dc71d06.png)
 
 #### 2.5 包场管理
+
 - 包场申请审核
 - 包场记录查看
 - 包场时间段配置
 
-![包场管理界面](./images/admin-bookings.png)
+![1770751347942.png](https://1.888440.xyz/global-free/2026/02/11/26/698b85dc90d80.png)
 
 #### 2.6 系统配置
+
 - 系统名称设置
 - 计费规则配置
 - 免费时长设置
 - SMTP邮件配置
 - Favicon图标设置
 
-![系统配置界面](./images/admin-config.png)
+![1770751449480.png](https://1.888440.xyz/global-free/2026/02/11/26/698b85e676027.png)
 
 #### 2.7 轮播图与公告
+
 - 轮播图上传
 - 公告发布/删除
 
-![轮播图管理界面](./images/admin-banners.png)
+![1770751397907.png](https://1.888440.xyz/global-free/2026/02/11/26/698b85e19baa1.png)
+
+![1770751404679.png](https://1.888440.xyz/global-free/2026/02/11/26/698b85e2018ba.png)
 
 #### 2.8 操作日志
+
 - 完整的操作记录
 - 日志搜索功能
 - 分页查看
 
-![操作日志界面](./images/admin-logs.png)
+![1770751419592.png](https://1.888440.xyz/global-free/2026/02/11/26/698b85e6326b5.png)
 
 ## 技术架构
 
 ### 前端
+
 - 纯HTML/CSS/JavaScript
 - 响应式设计
 - 轮播图组件
 - 模态框组件
 
 ### 后端
+
 - PHP
 - MySQL数据库
 - RESTful API
 - PHPMailer邮件发送
 
 ### 安全特性
+
 - Session管理
 - 权限验证
 - SQL注入防护
@@ -164,12 +184,14 @@
 ## 部署要求
 
 ### 环境要求
+
 - PHP 7.4+
 - MySQL 5.7+
 - Nginx/Apache
 - PHPMailer
 
 ### 推荐配置
+
 - 宝塔面板
 - Nginx
 - PHP 8.0
@@ -187,7 +209,9 @@
 ## 配置说明
 
 ### 管理员后台功能
+
 管理员后台提供完整的管理功能，包括：
+
 - **系统概览**：用户统计、在线用户、今日交易、系统状态
 - **用户管理**：用户列表、信息编辑、余额调整、封禁解封、赠送时长卡
 - **商品管理**：商品添加/编辑/删除、库存管理、价格设置
@@ -197,7 +221,9 @@
 - **操作日志**：完整操作记录、日志搜索、分页查看
 
 ### 系统配置
+
 在管理员后台可以配置：
+
 - 系统名称（显示在首页和标题栏）
 - 入场免费阈值（进场后在此时间内退场不计费）
 - 计费规则设置（按分钟或固定金额计费）
@@ -209,7 +235,9 @@
 - SMTP邮件配置（服务器、端口、用户名、密码、发件人信息）
 
 ### 安全配置
+
 建议配置：
+
 - SSL证书
 - 防火墙
 - 目录权限
@@ -218,20 +246,25 @@
 ## 常见问题
 
 ### Q: 如何修改系统名称？
+
 A: 在管理员后台的"系统配置"中修改"系统名称"。
 
 ### Q: 如何配置邮件发送？
+
 A: 在管理员后台的"SMTP设置"中配置SMTP服务器信息。（不支持SSL，一般是使用25端口）
 
 ### Q: 如何修改计费规则？
+
 A: 在管理员后台的"系统配置"中修改"计费规则"。
 
 ### Q: 如何保护管理员后台？
+
 A: 建议使用Nginx/Apache配置目录保护，设置IP白名单或密码保护。
 
 ## 更新日志
 
 ### v1.0.0
+
 - 初始版本发布
 - 用户注册登录
 - 包场功能
@@ -252,3 +285,6 @@ A: 建议使用Nginx/Apache配置目录保护，设置IP白名单或密码保护
 ## 许可证
 
 MIT License
+
+
+****
