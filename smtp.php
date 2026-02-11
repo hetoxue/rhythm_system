@@ -219,6 +219,7 @@ function send_booking_invitation_email(string $email, string $inviterName, strin
 {
     $systemName = get_config_value('system_name', '场地计费系统');
     $subject = $systemName . ' - 包场邀请通知';
+    $graceMinutes = (int)get_config_value('booking_grace_minutes', 5, true);
     
     $body = "
     <html>
@@ -237,7 +238,7 @@ function send_booking_invitation_email(string $email, string $inviterName, strin
             </div>
             <p style='color: #666;'>
                 在包场时间段内，您可以自由进出场地，无需额外付费。
-                包场结束后有5分钟缓冲时间，请在此时间内完成出场，否则将开始计时收费。
+                包场结束后有{$graceMinutes}分钟缓冲时间，请在此时间内完成出场，否则将开始计时收费。
             </p>
             <p style='color: #999; font-size: 14px;'>
                 请登录网站查看详细信息。
@@ -262,6 +263,7 @@ function send_booking_approved_email(string $email, string $date, string $startT
 {
     $systemName = get_config_value('system_name', '场地计费系统');
     $subject = $systemName . ' - 包场申请已通过';
+    $graceMinutes = (int)get_config_value('booking_grace_minutes', 5, true);
     
     $body = "
     <html>
@@ -280,12 +282,12 @@ function send_booking_approved_email(string $email, string $date, string $startT
             </div>
             <p style='color: #666;'>
                 被邀请人已收到邮件通知，请按时到场。
-                包场结束后有5分钟缓冲时间，请在此时间内完成出场，否则将开始计时收费。
+                包场结束后有{$graceMinutes}分钟缓冲时间，请在此时间内完成出场，否则将开始计时收费。
             </p>
         </div>
     </body>
     </html>
-    ";
+    ";;
     
     return send_smtp_email($email, $subject, $body, 'booking_approved');
 }

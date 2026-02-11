@@ -741,7 +741,21 @@
             }
         }
 
-        // 4. 其他模块逻辑复用
+        // BBCode解析器
+        function parseBBCode(text) {
+            return text
+                .replace(/\[b\]([\s\S]*?)\[\/b\]/gi, '<b>$1</b>')
+                .replace(/\[i\]([\s\S]*?)\[\/i\]/gi, '<i>$1</i>')
+                .replace(/\[u\]([\s\S]*?)\[\/u\]/gi, '<u>$1</u>')
+                .replace(/\[url\]([\s\S]*?)\[\/url\]/gi, '<a href=\"$1\" target=\"_blank\">$1</a>')
+                .replace(/\[url=([^\]]+)\]([\s\S]*?)\[\/url\]/gi, '<a href=\"$1\" target=\"_blank\">$2</a>')
+                .replace(/\[img\]([\s\S]*?)\[\/img\]/gi, '<img src=\"$1\" style=\"max-width:100%\">')
+                .replace(/\[color=([^\]]+)\]([\s\S]*?)\[\/color\]/gi, '<span style=\"color:$1\">$2</span>')
+                .replace(/\[size=([^\]]+)\]([\s\S]*?)\[\/size\]/gi, '<span style=\"font-size:$1px\">$2</span>')
+                .replace(/\[br\]/gi, '<br>')
+                .replace(/\n/g, '<br>');
+        }
+
         // Config & Notice
         async function loadUserAnnouncements(configData) {
             try {
@@ -751,7 +765,12 @@
                     document.querySelector('.sider-brand span').textContent = '⚡ ' + configData.system_name;
                 }
                 const box = document.getElementById('userNoticeList');
-                box.innerHTML = (configData.announcements || []).map(a => `<li class="notice-item" onclick="showModal({title:'${a.title}',content:'${a.content.replace(/\n/g, '<br>')}',showCancel:false})">${a.title}</li>`).join('');
+                box.innerHTML = (configData.announcements || []).map(a => {
+                    const safeTitle = a.title.replace(/'/g, "\\'");
+                    const escapedContent = a.content.replace(/'/g, "\\'");
+                    const bbcodeContent = parseBBCode(escapedContent).replace(/"/g, "&quot;");
+                    return `<li class="notice-item" onclick="showModal({title:'${safeTitle}',content:'${bbcodeContent}',showCancel:false})">${a.title}</li>`;
+                }).join('');
             } catch (e) { }
         }
 

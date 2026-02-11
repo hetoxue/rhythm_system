@@ -553,8 +553,10 @@ textarea:focus {
     border: 1px solid var(--n-border) !important;
     border-radius: 8px !important;
     box-shadow: 0 12px 32px 4px rgba(0, 0, 0, 0.2), 0 8px 20px rgba(0, 0, 0, 0.1) !important;
-    max-width: 440px;
-    width: 90%;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: auto;
+    overflow: auto;
     padding: 24px !important;
     position: relative;
     animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);

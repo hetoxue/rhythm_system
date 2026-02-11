@@ -162,23 +162,32 @@ function api_exit(): void
     $bookingEndTime = null;
     $overtimeMinutes = 0;
 
-    // 如果是包场入场，完全免费
+    // 包场入场处理
     if ($isBookingEntrance) {
-        $isFreeByBooking = true;
+        // 查找对应的包场记录
+        $booking = find_booking_for_entrance_period($entrance['enter_time'], date('Y-m-d H:i:s', $now));
+        if ($booking) {
+            $bookingEndTime = strtotime($booking['date'] . ' ' . $booking['end_time']);
+            // 如果当前时间在 包场结束时间 + 缓冲时间内，则这一整段算作包场免费
+            if ($now <= ($bookingEndTime + $graceMinutes * 60)) {
+                $isFreeByBooking = true;
+            } else {
+                // 超过缓冲期，计算超出时间（从包场结束时间开始算，包括缓冲期）
+                $overtimeMinutes = (int)ceil(($now - $bookingEndTime) / 60);
+            }
+        } else {
+            // 没有找到包场记录，免费
+            $isFreeByBooking = true;
+        }
     } elseif ($booking && is_user_invited_to_booking((int)$booking['id'], $user)) {
-        // 在包场日期的结束时间
+        // 非包场入场，但在包场邀请名单中
         $bookingEndTime = strtotime($booking['date'] . ' ' . $booking['end_time']);
         // 如果当前时间在 包场结束时间 + 缓冲时间内，则这一整段算作包场免费
         if ($now <= ($bookingEndTime + $graceMinutes * 60)) {
             $isFreeByBooking = true;
         } else {
             // 超过缓冲期，计算超出时间（从包场结束时间开始算，包括缓冲期）
-            $overtimeStart = $bookingEndTime;
-            $overtimeMinutes = (int)ceil(($now - $overtimeStart) / 60);
-            // 确保至少计算缓冲期的分钟数
-            if ($overtimeMinutes < $graceMinutes) {
-                $overtimeMinutes = $graceMinutes;
-            }
+            $overtimeMinutes = (int)ceil(($now - $bookingEndTime) / 60);
         }
     }
 
@@ -368,24 +377,35 @@ function find_booking_for_entrance_period(string $enterTime, string $exitTime): 
     $enterDate = substr($enterTime, 0, 10);
     $exitDate = substr($exitTime, 0, 10);
 
-    if ($enterDate !== $exitDate) {
-        // 简化：暂不支持跨天包场
-        return null;
+    // 支持跨日包场：检查入场和出场日期范围内的所有包场
+    $dateRange = [];
+    $currentDate = $enterDate;
+    while ($currentDate <= $exitDate) {
+        $dateRange[] = $currentDate;
+        $currentDate = date('Y-m-d', strtotime($currentDate . ' +1 day'));
     }
 
-    $date = $enterDate;
-    $start = substr($enterTime, 11, 8);
-    $end = substr($exitTime, 11, 8);
-
+    $placeholders = implode(',', array_fill(0, count($dateRange), '?'));
     $bookings = db_fetch_all(
         'SELECT * FROM booking_orders 
-         WHERE date = :date AND status = 1',
-        [':date' => $date]
+         WHERE date IN (' . $placeholders . ') AND status = 1',
+        $dateRange
     );
 
+    $enterTs = strtotime($enterTime);
+    $exitTs = strtotime($exitTime);
+
     foreach ($bookings as $b) {
-        // 如果整个入场时段都在包场范围内，可认为受包场影响
-        if ($start >= $b['start_time'] && $end <= $b['end_time']) {
+        $bookingStartTs = strtotime($b['date'] . ' ' . $b['start_time']);
+        $bookingEndTs = strtotime($b['date'] . ' ' . $b['end_time']);
+
+        // 处理跨日包场
+        if ($bookingEndTs <= $bookingStartTs) {
+            $bookingEndTs += 86400; // 加一天
+        }
+
+        // 如果入场时间在包场范围内，可认为受包场影响
+        if ($enterTs >= $bookingStartTs && $enterTs <= $bookingEndTs) {
             return $b;
         }
     }
@@ -546,11 +566,8 @@ function api_heartbeat(): void
                     'amount_text' => '免费'
                 ]);
             } else {
-                // 超时，计算费用
+                // 超过缓冲期，计算费用（从包场结束时间开始算，包括缓冲期）
                 $overtimeMinutes = (int)ceil(($now - $bookingEndTime) / 60);
-                if ($overtimeMinutes < $graceMinutes) {
-                    $overtimeMinutes = $graceMinutes;
-                }
 
                 $billingMinutes = (int)get_config_value('billing_minutes', 60);
                 $billingAmount = (int)get_config_value('billing_amount', 0);
