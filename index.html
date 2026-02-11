@@ -297,8 +297,19 @@
 
                 // 显示计费规则
                 const billingRulesEl = document.getElementById('billingRules');
-                if (billingRulesEl && data.billing_rules) {
-                    const billingText = data.billing_rules.replace(/\n/g, '<br>');
+                if (billingRulesEl && data.configs) {
+                    const billingMinutes = data.configs.billing_minutes || 60;
+                    const billingAmount = data.configs.billing_amount || 0;
+                    const freeMinutes = data.configs.free_minutes || 5;
+
+                    let billingText = '';
+                    if (billingAmount > 0) {
+                        billingText = `<div><strong>计费规则：</strong>${billingMinutes}分钟内收费${billingAmount}元</div>`;
+                        billingText += `<div><strong>免费阈值：</strong>进场${freeMinutes}分钟内退场不计费</div>`;
+                    } else {
+                        billingText = `<div><strong>计费规则：</strong>按分钟计费，1分钟1元</div>`;
+                        billingText += `<div><strong>免费阈值：</strong>进场${freeMinutes}分钟内退场不计费</div>`;
+                    }
                     billingRulesEl.innerHTML = billingText;
                 }
 
