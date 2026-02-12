@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `locked_until` DATETIME DEFAULT NULL,
   `failed_login_count` INT NOT NULL DEFAULT 0,
   `last_login_time` DATETIME DEFAULT NULL,
+  `last_login_ip` VARCHAR(45) DEFAULT NULL,
   `register_ip` VARCHAR(45) DEFAULT NULL,
   `register_device` TEXT DEFAULT NULL,
   `created_at` DATETIME NOT NULL,

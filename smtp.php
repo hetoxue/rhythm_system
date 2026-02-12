@@ -59,6 +59,9 @@ function send_smtp_email(string $to, string $subject, string $body, string $type
     $status = 0;
     $errorMessage = null;
     
+    // 使用输出缓冲防止意外输出
+    ob_start();
+    
     try {
         // 检查PHPMailer是否存在，支持多种安装方式
         $phpmailerPaths = [
@@ -137,6 +140,9 @@ function send_smtp_email(string $to, string $subject, string $body, string $type
         $errorMessage = $e->getMessage();
         error_log('邮件发送失败: ' . $errorMessage);
     }
+    
+    // 清理输出缓冲
+    ob_end_clean();
     
     // 记录邮件发送日志
     try {
