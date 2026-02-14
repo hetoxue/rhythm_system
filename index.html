@@ -231,11 +231,44 @@
             document.getElementById('modalBody').innerHTML = content;
             const cancelBtn = document.getElementById('modalCancel');
             cancelBtn.style.display = showCancel ? '' : 'none';
+            
+            // 显示modal
             overlay.style.display = 'flex';
+            overlay.style.visibility = 'visible';
+            // 移除关闭动画类（如果有）
+            overlay.classList.remove('closing');
+            const modalContent = overlay.querySelector('.modal-content');
+            modalContent.classList.remove('closing');
 
             return new Promise((resolve) => {
-                document.getElementById('modalConfirm').onclick = () => { overlay.style.display = 'none'; resolve(true); };
-                cancelBtn.onclick = () => { overlay.style.display = 'none'; resolve(false); };
+                const closeModal = () => {
+                    // 添加关闭动画
+                    overlay.classList.add('closing');
+                    modalContent.classList.add('closing');
+                    
+                    // 等待动画完成后隐藏
+                    setTimeout(() => {
+                        overlay.style.visibility = 'hidden';
+                        overlay.style.display = 'none';
+                        overlay.classList.remove('closing');
+                        modalContent.classList.remove('closing');
+                    }, 300);
+                };
+
+                document.getElementById('modalConfirm').onclick = () => { 
+                    closeModal();
+                    resolve(true); 
+                };
+                cancelBtn.onclick = () => { 
+                    closeModal();
+                    resolve(false); 
+                };
+                overlay.onclick = (e) => {
+                    if (e.target === overlay) {
+                        closeModal();
+                        resolve(false);
+                    }
+                };
             });
         }
 

@@ -220,9 +220,87 @@ function performInstall($config) {
         // 创建安装锁文件
         file_put_contents(__DIR__ . '/install.lock', date('Y-m-d H:i:s'));
         
+        // 更新config.php文件
+        updateConfigFile($config);
+        
         return true;
     } catch (Exception $e) {
         throw new Exception('安装失败: ' . $e->getMessage());
+    }
+}
+
+// 更新config.php文件
+function updateConfigFile($config) {
+    $configFile = __DIR__ . '/config.php';
+    
+    // 检查文件是否存在
+    if (!file_exists($configFile)) {
+        // 如果config.php不存在，尝试从config.example.php复制
+        $exampleFile = __DIR__ . '/config.example.php';
+        if (file_exists($exampleFile)) {
+            if (!copy($exampleFile, $configFile)) {
+                throw new Exception('无法创建config.php文件，请手动复制config.example.php为config.php并设置权限');
+            }
+        } else {
+            throw new Exception('config.php文件不存在，且config.example.php也不存在。请手动创建config.php文件');
+        }
+    }
+    
+    // 检查文件是否可写
+    if (!is_writable($configFile)) {
+        throw new Exception('config.php文件不可写，请检查文件权限。在Linux上请执行：chmod 666 config.php');
+    }
+    
+    // 读取现有配置文件
+    $content = file_get_contents($configFile);
+    if ($content === false) {
+        throw new Exception('无法读取config.php文件');
+    }
+    
+    // 备份原文件
+    $backupFile = $configFile . '.backup.' . date('YmdHis');
+    file_put_contents($backupFile, $content);
+    
+    // 替换数据库配置 - 使用更精确的正则表达式
+    $patterns = [
+        "/'host'\s*=>\s*'.*?'/",
+        "/'port'\s*=>\s*\d+/",
+        "/'database'\s*=>\s*'.*?'/", 
+        "/'username'\s*=>\s*'.*?'/",
+        "/'password'\s*=>\s*'.*?'/",
+        "/'charset'\s*=>\s*'.*?'/"
+    ];
+    
+    $replacements = [
+        "'host' => '{$config['db_host']}'",
+        "'port' => {$config['db_port']}",
+        "'database' => '{$config['db_name']}'",
+        "'username' => '{$config['db_user']}'",
+        "'password' => '{$config['db_password']}'",
+        "'charset' => 'utf8mb4'"
+    ];
+    
+    $newContent = preg_replace($patterns, $replacements, $content);
+    
+    // 检查是否有内容变化
+    if ($newContent === $content) {
+        // 可能是正则匹配失败，尝试更简单的方法
+        $newContent = preg_replace(
+            "/('db'\s*=>\s*\[[\s\S]*?'host'\s*=>\s*)'.*?'([\s\S]*?'port'\s*=>\s*)\d+([\s\S]*?'database'\s*=>\s*)'.*?'([\s\S]*?'username'\s*=>\s*)'.*?'([\s\S]*?'password'\s*=>\s*)'.*?'/",
+            "\${1}'{$config['db_host']}'\${2}{$config['db_port']}\${3}'{$config['db_name']}'\${4}'{$config['db_user']}'\${5}'{$config['db_password']}'",
+            $content
+        );
+    }
+    
+    // 写回文件
+    if (file_put_contents($configFile, $newContent) === false) {
+        throw new Exception('无法写入config.php文件，请检查文件权限');
+    }
+    
+    // 验证写入结果
+    $verifyContent = file_get_contents($configFile);
+    if (strpos($verifyContent, $config['db_host']) === false) {
+        throw new Exception('config.php文件写入验证失败，请检查文件内容');
     }
 }
 

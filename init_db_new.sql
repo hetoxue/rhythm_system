@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `last_login_ip` VARCHAR(45) DEFAULT NULL,
   `register_ip` VARCHAR(45) DEFAULT NULL,
   `register_device` TEXT DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_users_mobile` (`mobile`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS `ip_locks` (
   `is_locked` TINYINT NOT NULL DEFAULT 0,
   `locked_until` DATETIME DEFAULT NULL,
   `reason` VARCHAR(255) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_ip_locks_ip` (`ip`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -51,8 +51,8 @@ CREATE TABLE IF NOT EXISTS `admins` (
   `status` TINYINT NOT NULL DEFAULT 1,
   `last_login_ip` VARCHAR(45) DEFAULT NULL,
   `last_login_time` DATETIME DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_admins_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -72,8 +72,8 @@ CREATE TABLE IF NOT EXISTS `entrance_records` (
   `use_time_card` TINYINT NOT NULL DEFAULT 0,
   `time_card_id` BIGINT UNSIGNED DEFAULT NULL,
   `is_booking` TINYINT NOT NULL DEFAULT 0,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_entrance_user` (`user_id`),
   CONSTRAINT `fk_entrance_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
@@ -89,8 +89,8 @@ CREATE TABLE IF NOT EXISTS `recharge_orders` (
   `pay_channel_no` VARCHAR(128) DEFAULT NULL,
   `status` TINYINT NOT NULL DEFAULT 0,
   `paid_at` DATETIME DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_recharge_order_no` (`order_no`),
   KEY `idx_recharge_user` (`user_id`),
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `consume_records` (
   `amount` BIGINT NOT NULL,
   `balance_after` BIGINT NOT NULL,
   `remark` VARCHAR(255) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_consume_user` (`user_id`),
   CONSTRAINT `fk_consume_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
@@ -121,8 +121,8 @@ CREATE TABLE IF NOT EXISTS `time_card_plans` (
   `valid_days` INT NOT NULL,
   `max_per_user` INT NOT NULL DEFAULT 0,
   `status` TINYINT NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -138,8 +138,8 @@ CREATE TABLE IF NOT EXISTS `user_time_cards` (
   `status` TINYINT NOT NULL DEFAULT 1,
   `start_time` DATETIME NOT NULL,
   `expire_time` DATETIME NOT NULL,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_user_time_cards_user` (`user_id`),
   CONSTRAINT `fk_user_time_cards_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS `time_card_usage_logs` (
   `user_id` BIGINT UNSIGNED NOT NULL,
   `entrance_id` BIGINT UNSIGNED NOT NULL,
   `used_min` INT NOT NULL,
-  `created_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_time_card_usage_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -168,8 +168,8 @@ CREATE TABLE IF NOT EXISTS `booking_orders` (
   `status` TINYINT NOT NULL DEFAULT 0,
   `price` BIGINT NOT NULL DEFAULT 0,
   `remark` VARCHAR(255) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_booking_date` (`date`),
   CONSTRAINT `fk_booking_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
@@ -184,16 +184,16 @@ CREATE TABLE IF NOT EXISTS `booking_slots` (
   `price` BIGINT NOT NULL,
   `max_people` INT NOT NULL DEFAULT 0,
   `status` TINYINT NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 初始插入日场和夜场配置
-INSERT INTO `booking_slots` (`name`, `start_time`, `end_time`, `price`, `max_people`, `status`, `created_at`, `updated_at`)
+INSERT IGNORE INTO `booking_slots` (`name`, `start_time`, `end_time`, `price`, `max_people`, `status`, `created_at`, `updated_at`)
 VALUES 
-('日场', '10:00:00', '22:00:00', 50000, 20, 1, NOW(), NOW()),
-('夜场', '22:00:00', '10:00:00', 80000, 15, 1, NOW(), NOW());
+('日场', '10:00:00', '22:00:00', 50000, 20, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('夜场', '22:00:00', '10:00:00', 80000, 15, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- 包场邀请名单
 CREATE TABLE IF NOT EXISTS `booking_invited_users` (
@@ -202,7 +202,7 @@ CREATE TABLE IF NOT EXISTS `booking_invited_users` (
   `mobile` VARCHAR(20) DEFAULT NULL,
   `qq` VARCHAR(20) DEFAULT NULL,
   `user_id` BIGINT UNSIGNED DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_booking_invited_booking` (`booking_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS `booking_actual_attendees` (
   `booking_id` BIGINT UNSIGNED NOT NULL,
   `user_id` BIGINT UNSIGNED NOT NULL,
   `entrance_id` BIGINT UNSIGNED NOT NULL,
-  `created_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_booking_actual_booking` (`booking_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -227,8 +227,8 @@ CREATE TABLE IF NOT EXISTS `recharge_cards` (
   `used_by` BIGINT UNSIGNED DEFAULT NULL,
   `used_at` DATETIME DEFAULT NULL,
   `expire_time` DATETIME DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_recharge_cards_card_no` (`card_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -243,8 +243,8 @@ CREATE TABLE IF NOT EXISTS `products` (
   `stock` INT NOT NULL DEFAULT 0,
   `sort_order` INT NOT NULL DEFAULT 0,
   `status` TINYINT NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -258,8 +258,8 @@ CREATE TABLE IF NOT EXISTS `product_orders` (
   `total_amount` BIGINT NOT NULL,
   `pay_method` TINYINT NOT NULL,
   `status` TINYINT NOT NULL DEFAULT 0,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_product_order_no` (`order_no`),
   KEY `idx_product_order_user` (`user_id`),
@@ -275,8 +275,8 @@ CREATE TABLE IF NOT EXISTS `announcements` (
   `content` TEXT NOT NULL,
   `status` TINYINT NOT NULL DEFAULT 1,
   `sort_order` INT NOT NULL DEFAULT 0,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -288,8 +288,8 @@ CREATE TABLE IF NOT EXISTS `banners` (
   `link_url` VARCHAR(255) DEFAULT NULL,
   `sort_order` INT NOT NULL DEFAULT 0,
   `status` TINYINT NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -299,7 +299,7 @@ CREATE TABLE IF NOT EXISTS `system_configs` (
   `config_key` VARCHAR(100) NOT NULL,
   `config_value` TEXT NOT NULL,
   `remark` VARCHAR(255) DEFAULT NULL,
-  `updated_at` DATETIME NOT NULL,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_system_configs_key` (`config_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -312,7 +312,7 @@ CREATE TABLE IF NOT EXISTS `operation_logs` (
   `action` VARCHAR(100) NOT NULL,
   `ip` VARCHAR(45) DEFAULT NULL,
   `detail` TEXT DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_operation_actor` (`actor_type`, `actor_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -325,7 +325,7 @@ CREATE TABLE IF NOT EXISTS `login_logs` (
   `ip` VARCHAR(45) NOT NULL,
   `status` TINYINT NOT NULL,
   `reason` VARCHAR(255) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_login_user` (`user_type`, `user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -338,7 +338,7 @@ CREATE TABLE IF NOT EXISTS `verification_codes` (
   `type` VARCHAR(20) NOT NULL COMMENT 'register/reset',
   `expires_at` DATETIME NOT NULL,
   `used` TINYINT NOT NULL DEFAULT 0,
-  `created_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_email_type` (`email`, `type`),
   KEY `idx_expires` (`expires_at`)
@@ -351,7 +351,7 @@ CREATE TABLE IF NOT EXISTS `email_logs` (
   `subject` VARCHAR(255) NOT NULL,
   `status` TINYINT NOT NULL DEFAULT 0 COMMENT '0=失败,1=成功',
   `error_message` TEXT DEFAULT NULL,
-  `created_at` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_status` (`status`),
   KEY `idx_created` (`created_at`)
@@ -364,19 +364,19 @@ VALUES (
   '$2y$10$SOME_DEFAULT_HASH_PLEASE_CHANGE',
   9,
   1,
-  NOW(),
-  NOW()
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
 );
 
 -- 初始化系统配置
 INSERT IGNORE INTO `system_configs` (`config_key`, `config_value`, `remark`, `updated_at`)
 VALUES
-('login_favicon', '', '登录页面favicon图标URL', NOW()),
-('user_favicon', '', '用户端favicon图标URL', NOW()),
-('admin_favicon', '', '管理后台favicon图标URL', NOW()),
-('system_name', '音游窝计费系统', '系统名称', NOW()),
-('free_minutes', '5', '免费时长（分钟）', NOW()),
-('billing_minutes', '60', '计费单位（分钟）', NOW()),
-('billing_amount', '0', '计费金额（分），0表示按分钟计费', NOW()),
-('price_per_minute', '100', '每分钟价格（分）', NOW()),
-('booking_grace_minutes', '5', '包场后撤场缓冲时间（分钟）', NOW());
+('login_favicon', '', '登录页面favicon图标URL', CURRENT_TIMESTAMP),
+('user_favicon', '', '用户端favicon图标URL', CURRENT_TIMESTAMP),
+('admin_favicon', '', '管理后台favicon图标URL', CURRENT_TIMESTAMP),
+('system_name', '音游窝计费系统', '系统名称', CURRENT_TIMESTAMP),
+('free_minutes', '5', '免费时长（分钟）', CURRENT_TIMESTAMP),
+('billing_minutes', '60', '计费单位（分钟）', CURRENT_TIMESTAMP),
+('billing_amount', '0', '计费金额（分），0表示按分钟计费', CURRENT_TIMESTAMP),
+('price_per_minute', '100', '每分钟价格（分）', CURRENT_TIMESTAMP),
+('booking_grace_minutes', '5', '包场后撤场缓冲时间（分钟）', CURRENT_TIMESTAMP);

@@ -48,8 +48,44 @@ function handle_admin_action(string $action): void
         case 'email_logs':
             api_admin_email_logs();
             break;
-        case 'stats_overview':
-            api_admin_stats_overview();
+        case 'count_today_users':
+            api_admin_count_today_users();
+            break;
+        case 'count_today_sales':
+            api_admin_count_today_sales();
+            break;
+        case 'count_today_bookings':
+            api_admin_count_today_bookings();
+            break;
+        case 'count_today_recharge':
+            api_admin_count_today_recharge();
+            break;
+        case 'recent_activities':
+            api_admin_recent_activities();
+            break;
+        case 'pending_items':
+            api_admin_pending_items();
+            break;
+        case 'count_users':
+            api_admin_count_users();
+            break;
+        case 'count_products':
+            api_admin_count_products();
+            break;
+        case 'count_announcements':
+            api_admin_count_announcements();
+            break;
+        case 'count_banners':
+            api_admin_count_banners();
+            break;
+        case 'count_admins':
+            api_admin_count_admins();
+            break;
+        case 'count_failed_logins':
+            api_admin_count_failed_logins();
+            break;
+        case 'system_info':
+            api_admin_system_info();
             break;
         case 'booking_list':
             api_admin_booking_list();
@@ -126,6 +162,12 @@ function handle_admin_action(string $action): void
         // 系统配置
         case 'set_config':
             api_admin_set_config();
+            break;
+        case 'user_list':
+            api_admin_user_list();
+            break;
+        case 'user_create':
+            api_admin_user_create();
             break;
         case 'user_balance_adjust':
             api_admin_user_balance_adjust();
@@ -376,30 +418,36 @@ function api_admin_user_balance_adjust(): void
 {
     $admin = require_admin();
     $userId = (int)input('user_id', 0);
-    $amountYuan = (float)input('amount_yuan', 0);
-    $remark = input('remark', '管理员手动调整');
-
-    if ($userId <= 0 || $amountYuan == 0) {
+    $amount_yuan = input('amount_yuan');
+    $remark = input('remark', '');
+    
+    if ($userId <= 0 || empty($amount_yuan)) {
         json_error('参数错误');
     }
-
-    $amount = (int)round($amountYuan * 100);
-    $user = db_fetch_one('SELECT balance, mobile FROM users WHERE id = ?', [$userId]);
+    
+    $amount = (int)round(floatval($amount_yuan) * 100);
+    if ($amount == 0) {
+        json_error('调整金额不能为0');
+    }
+    
+    $user = db_fetch_one('SELECT id, balance FROM users WHERE id = ?', [$userId]);
     if (!$user) {
         json_error('用户不存在');
     }
-
-    $newBalance = (int)$user['balance'] + $amount;
+    
+    $newBalance = $user['balance'] + $amount;
     
     $pdo = db();
     $pdo->beginTransaction();
     try {
         db_execute('UPDATE users SET balance = ?, updated_at = NOW() WHERE id = ?', [$newBalance, $userId]);
         
+        // 记录流水：加款用负数，扣款用正数
+        $recordAmount = $amount > 0 ? -$amount : abs($amount);
         db_execute(
             'INSERT INTO consume_records (user_id, type, related_id, amount, balance_after, remark, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, NOW())',
-            [$userId, 3, 0, abs($amount), $newBalance, $remark]
+             VALUES (?, 5, 0, ?, ?, ?, NOW())',
+            [$userId, $recordAmount, $newBalance, $remark]
         );
 
         $pdo->commit();
@@ -672,61 +720,278 @@ function api_admin_set_free_minutes(): void
 }
 
 /**
- * 简单统计：今日/本月营收、入场人数等
+ * 统计今日新注册用户
  */
-function api_admin_stats_overview(): void
+function api_admin_count_today_users(): void
 {
     require_admin();
-
     $today = date('Y-m-d');
-    $monthStart = date('Y-m-01');
-
-    // 今日入场人数
-    $todayEntranceRow = db_fetch_one(
-        "SELECT COUNT(*) AS cnt FROM entrance_records WHERE DATE(enter_time) = ?",
+    $count = db_fetch_one(
+        "SELECT COUNT(*) AS cnt FROM users WHERE DATE(created_at) = ?",
         [$today]
-    );
-    $todayEntrance = (int)($todayEntranceRow['cnt'] ?? 0);
+    )['cnt'] ?? 0;
+    json_response(['count' => $count]);
+}
 
-    // 今日充值金额
-    $todayRechargeRow = db_fetch_one(
-        "SELECT SUM(amount) AS total FROM recharge_orders WHERE status = 1 AND DATE(paid_at) = ?",
+/**
+ * 统计今日商品销售
+ */
+function api_admin_count_today_sales(): void
+{
+    require_admin();
+    $today = date('Y-m-d');
+    $count = db_fetch_one(
+        "SELECT COUNT(*) AS cnt FROM product_orders WHERE DATE(created_at) = ?",
         [$today]
-    );
-    $todayRecharge = (int)($todayRechargeRow['total'] ?? 0);
+    )['cnt'] ?? 0;
+    json_response(['count' => $count]);
+}
 
-    // 今日消费金额
-    $todayConsumeRow = db_fetch_one(
-        "SELECT SUM(amount) AS total FROM consume_records WHERE DATE(created_at) = ?",
+/**
+ * 统计今日包场申请
+ */
+function api_admin_count_today_bookings(): void
+{
+    require_admin();
+    $today = date('Y-m-d');
+    $count = db_fetch_one(
+        "SELECT COUNT(*) AS cnt FROM booking_orders WHERE DATE(created_at) = ?",
         [$today]
-    );
-    $todayConsume = (int)($todayConsumeRow['total'] ?? 0);
+    )['cnt'] ?? 0;
+    json_response(['count' => $count]);
+}
 
-    // 本月充值
-    $monthRechargeRow = db_fetch_one(
-        "SELECT SUM(amount) AS total FROM recharge_orders WHERE status = 1 AND paid_at >= ?",
-        [$monthStart]
-    );
-    $monthRecharge = (int)($monthRechargeRow['total'] ?? 0);
+/**
+ * 统计今日充值金额
+ */
+function api_admin_count_today_recharge(): void
+{
+    require_admin();
+    $today = date('Y-m-d');
+    $amount = db_fetch_one(
+        "SELECT SUM(-amount) AS total FROM consume_records WHERE amount < 0 AND DATE(created_at) = ?",
+        [$today]
+    )['total'] ?? 0;
+    json_response(['amount' => (int)$amount]);
+}
 
-    // 本月消费
-    $monthConsumeRow = db_fetch_one(
-        "SELECT SUM(amount) AS total FROM consume_records WHERE created_at >= ?",
-        [$monthStart]
+/**
+ * 获取最近活动
+ */
+function api_admin_recent_activities(): void
+{
+    require_admin();
+    $activities = db_fetch_all(
+        "SELECT * FROM operation_logs ORDER BY id DESC LIMIT 10"
     );
-    $monthConsume = (int)($monthConsumeRow['total'] ?? 0);
+    
+    // 简化活动描述
+    foreach ($activities as &$activity) {
+        $activity['action'] = get_action_description($activity['action']);
+    }
+    
+    json_response($activities);
+}
 
-    json_response([
-        'today' => [
-            'entrance_count' => $todayEntrance,
-            'recharge_total' => $todayRecharge,
-            'consume_total'  => $todayConsume,
-        ],
-        'month' => [
-            'recharge_total' => $monthRecharge,
-            'consume_total'  => $monthConsume,
-        ],
-    ]);
+/**
+ * 获取待处理事项
+ */
+function api_admin_pending_items(): void
+{
+    require_admin();
+    $pending = [];
+    
+    // 待审核的包场申请
+    $bookings = db_fetch_all(
+        "SELECT id, user_id, date, created_at FROM booking_orders WHERE status = 0 ORDER BY created_at DESC LIMIT 5"
+    );
+    foreach ($bookings as $booking) {
+        // 获取用户信息
+        $user = db_fetch_one("SELECT mobile FROM users WHERE id = ?", [$booking['user_id']]);
+        $pending[] = [
+            'id' => $booking['id'],
+            'type' => 'booking',
+            'title' => '包场申请待审核',
+            'description' => ($user['mobile'] ?? '未知用户') . ' - ' . $booking['date'],
+            'priority' => 'high',
+            'time' => format_time_diff($booking['created_at'])
+        ];
+    }
+    
+    // 今日登录失败次数过多的用户
+    $failedUsers = db_fetch_all(
+        "SELECT mobile, COUNT(*) as fail_count FROM login_logs 
+         WHERE status = 0 AND DATE(created_at) = ? 
+         GROUP BY mobile 
+         HAVING fail_count >= 3 
+         LIMIT 3",
+        [date('Y-m-d')]
+    );
+    foreach ($failedUsers as $user) {
+        $pending[] = [
+            'id' => $user['mobile'],
+            'type' => 'user',
+            'title' => '用户登录异常',
+            'description' => $user['mobile'] . ' 今日失败 ' . $user['fail_count'] . ' 次',
+            'priority' => 'medium',
+            'time' => '今天'
+        ];
+    }
+    
+    json_response($pending);
+}
+
+/**
+ * 辅助函数：获取操作描述
+ */
+function get_action_description(string $action): string
+{
+    $descriptions = [
+        'admin_create_user' => '创建用户',
+        'admin_balance_adjust' => '调整余额',
+        'admin_login' => '管理员登录',
+        'user_register' => '用户注册',
+        'user_login' => '用户登录',
+        'user_recharge' => '用户充值',
+        'user_purchase' => '购买商品',
+        'booking_create' => '提交包场申请',
+        'booking_approve' => '审核通过包场',
+        'booking_reject' => '拒绝包场申请',
+    ];
+    
+    return $descriptions[$action] ?? $action;
+}
+
+/**
+ * 辅助函数：格式化时间差
+ */
+function format_time_diff(string $datetime): string
+{
+    $timestamp = strtotime($datetime);
+    $now = time();
+    $diff = $now - $timestamp;
+    
+    if ($diff < 60) {
+        return '刚刚';
+    } elseif ($diff < 3600) {
+        return floor($diff / 60) . '分钟前';
+    } elseif ($diff < 86400) {
+        return floor($diff / 3600) . '小时前';
+    } else {
+        return floor($diff / 86400) . '天前';
+    }
+}
+
+/**
+ * 统计用户数量
+ */
+function api_admin_count_users(): void
+{
+    require_admin();
+    $count = db_fetch_one("SELECT COUNT(*) AS cnt FROM users")['cnt'] ?? 0;
+    json_response(['count' => $count]);
+}
+
+/**
+ * 统计商品数量
+ */
+function api_admin_count_products(): void
+{
+    require_admin();
+    $count = db_fetch_one("SELECT COUNT(*) AS cnt FROM products")['cnt'] ?? 0;
+    json_response(['count' => $count]);
+}
+
+/**
+ * 统计公告数量
+ */
+function api_admin_count_announcements(): void
+{
+    require_admin();
+    $count = db_fetch_one("SELECT COUNT(*) AS cnt FROM announcements")['cnt'] ?? 0;
+    json_response(['count' => $count]);
+}
+
+/**
+ * 统计轮播图数量
+ */
+function api_admin_count_banners(): void
+{
+    require_admin();
+    $count = db_fetch_one("SELECT COUNT(*) AS cnt FROM banners")['cnt'] ?? 0;
+    json_response(['count' => $count]);
+}
+
+/**
+ * 统计管理员数量
+ */
+function api_admin_count_admins(): void
+{
+    require_admin();
+    $count = db_fetch_one("SELECT COUNT(*) AS cnt FROM admins")['cnt'] ?? 0;
+    json_response(['count' => $count]);
+}
+
+/**
+ * 统计今日登录失败次数
+ */
+function api_admin_count_failed_logins(): void
+{
+    require_admin();
+    $today = date('Y-m-d');
+    $count = db_fetch_one(
+        "SELECT COUNT(*) AS cnt FROM login_logs WHERE status = 0 AND DATE(created_at) = ?",
+        [$today]
+    )['cnt'] ?? 0;
+    json_response(['count' => $count]);
+}
+
+/**
+ * 获取系统信息
+ */
+function api_admin_system_info(): void
+{
+    require_admin();
+    
+    $data = [
+        'server_time' => date('Y-m-d H:i:s'),
+        'uptime' => '未知',
+        'os' => PHP_OS,
+        'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? '未知',
+        'mysql_version' => '未知',
+        'db_size' => '未知',
+        'system_name' => get_config_value('system_name', '未设置'),
+        'free_minutes' => get_config_value('free_minutes', 0)
+    ];
+    
+    // 获取MySQL版本
+    try {
+        $pdo = db();
+        $version = $pdo->query("SELECT VERSION() AS version")->fetch()['version'];
+        $data['mysql_version'] = $version;
+    } catch (Exception $e) {
+        // 忽略错误
+    }
+    
+    json_response($data);
+}
+
+/**
+ * 辅助函数：转换内存大小
+ */
+function return_bytes($val) {
+    $val = trim($val);
+    $last = strtolower($val[strlen($val)-1]);
+    $val = (int)$val;
+    switch($last) {
+        case 'g':
+            $val *= 1024;
+        case 'm':
+            $val *= 1024;
+        case 'k':
+            $val *= 1024;
+    }
+    return $val;
 }
 
 /**
@@ -1334,4 +1599,69 @@ function api_admin_user_card_delete(): void
     ]);
 
     json_response(null, 0, '已成功删除该时长卡');
+}
+
+/**
+ * 管理员创建用户
+ */
+function api_admin_user_create(): void
+{
+    $admin = require_admin();
+    
+    $mobile = input('mobile');
+    $qq = input('qq');
+    $password = input('password');
+    $initialBalance = (int)input('initial_balance', 0);
+    
+    if (empty($mobile) || empty($qq) || empty($password)) {
+        json_error('请填写完整信息');
+    }
+    
+    if (!preg_match('/^1[3-9]\d{9}$/', $mobile)) {
+        json_error('手机号格式不正确');
+    }
+    
+    if (!preg_match('/^\d{5,12}$/', $qq)) {
+        json_error('QQ号格式不正确');
+    }
+    
+    if (strlen($password) < 6) {
+        json_error('密码长度至少6位');
+    }
+    
+    // 检查手机号是否已存在
+    $existingUser = db_fetch_one('SELECT id FROM users WHERE mobile = ?', [$mobile]);
+    if ($existingUser) {
+        json_error('该手机号已被注册');
+    }
+    
+    // 获取管理员IP和UA
+    $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    
+    // 创建用户
+    $salt = generate_random_string(32);
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+    
+    db_execute(
+        'INSERT INTO users (mobile, qq, password, salt, balance, register_ip, register_device, created_at, updated_at) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)',
+        [$mobile, $qq, $hashedPassword, $salt, $initialBalance, $ip, $ua]
+    );
+    
+    $userId = db_last_insert_id();
+    
+    add_operation_log(2, (int)$admin['id'], 'admin_create_user', [
+        'target_user_id' => $userId,
+        'mobile' => $mobile,
+        'qq' => $qq,
+        'initial_balance' => $initialBalance
+    ]);
+    
+    json_response([
+        'user_id' => $userId,
+        'mobile' => $mobile,
+        'qq' => $qq,
+        'balance' => $initialBalance
+    ], 0, '用户创建成功');
 }

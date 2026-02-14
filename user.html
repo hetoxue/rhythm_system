@@ -431,23 +431,48 @@
             document.getElementById('modalBody').innerHTML = content;
             const cancelBtn = document.getElementById('modalCancel');
             cancelBtn.style.display = showCancel ? '' : 'none';
+            
+            // 显示modal
             overlay.style.display = 'flex';
+            overlay.style.visibility = 'visible';
+            // 移除关闭动画类（如果有）
+            overlay.classList.remove('closing');
+            const modalContent = overlay.querySelector('.modal-content');
+            modalContent.classList.remove('closing');
 
             return new Promise((resolve) => {
+                const closeModal = () => {
+                    // 添加关闭动画
+                    overlay.classList.add('closing');
+                    modalContent.classList.add('closing');
+                    
+                    // 等待动画完成后隐藏
+                    setTimeout(() => {
+                        overlay.style.visibility = 'hidden';
+                        overlay.style.display = 'none';
+                        overlay.classList.remove('closing');
+                        modalContent.classList.remove('closing');
+                    }, 300);
+                };
+
                 const confirmBtn = document.getElementById('modalConfirm');
                 // 移除旧的 listener 防止累积
                 const newConfirm = confirmBtn.cloneNode(true);
                 confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
-                const newCancel = cancelBtn.cloneNode(true);
-                cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
-
-                newConfirm.onclick = () => {
-                    overlay.style.display = 'none';
-                    resolve(true);
+                
+                newConfirm.onclick = () => { 
+                    closeModal();
+                    resolve(true); 
                 };
-                newCancel.onclick = () => {
-                    overlay.style.display = 'none';
-                    resolve(false);
+                cancelBtn.onclick = () => { 
+                    closeModal();
+                    resolve(false); 
+                };
+                overlay.onclick = (e) => {
+                    if (e.target === overlay) {
+                        closeModal();
+                        resolve(false);
+                    }
                 };
             });
         }

@@ -139,6 +139,9 @@ function api_product_buy(): void
     if ($productId <= 0 || $quantity <= 0) json_error('参数错误');
     if (!in_array($payMethod, ['balance', 'offline'])) json_error('支付方式无效');
 
+    // 转换支付方式为整数：balance=1, offline=2
+    $payMethodInt = $payMethod === 'balance' ? 1 : 2;
+
     // 检查商品是否存在
     $product = db_fetch_one('SELECT * FROM products WHERE id=?', [$productId]);
     if (!$product) json_error('商品不存在');
@@ -176,15 +179,16 @@ function api_product_buy(): void
         db_execute('UPDATE products SET stock=? WHERE id=?', [$product['stock'] - $quantity, $productId]);
 
         // 创建订单记录
+        $orderNo = 'PO' . date('YmdHis') . mt_rand(1000, 9999);
         db_execute(
-            'INSERT INTO product_orders (user_id, product_name, product_price, quantity, total_amount, pay_method, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+            'INSERT INTO product_orders (order_no, user_id, product_id, quantity, total_amount, pay_method, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
             [
+                $orderNo,
                 $user['id'],
-                $product['name'],
-                $product['price'],
+                $productId,
                 $quantity,
                 $totalPrice,
-                $payMethod
+                $payMethodInt
             ]
         );
 
@@ -214,10 +218,11 @@ function api_admin_product_orders(): void
         json_response(['total' => 0, 'list' => []]);
     }
 
-    // 联表查询用户手机号
-    $sql = "SELECT o.*, u.mobile, u.qq
+    // 联表查询用户手机号和商品信息
+    $sql = "SELECT o.*, u.mobile, u.qq, p.name as product_name, p.price as product_price
             FROM product_orders o
             LEFT JOIN users u ON o.user_id = u.id
+            LEFT JOIN products p ON o.product_id = p.id
             ORDER BY o.id DESC LIMIT $offset, $pageSize";
     $list = db_fetch_all($sql);
     
@@ -234,6 +239,9 @@ function api_product_my_orders(): void
     $user = current_user();
     if (!$user) json_error('未登录', 401);
     
-    $list = db_fetch_all("SELECT * FROM product_orders WHERE user_id=? ORDER BY id DESC LIMIT 50", [$user['id']]);
+    $list = db_fetch_all("SELECT o.*, p.name as product_name, p.price as product_price 
+                          FROM product_orders o 
+                          LEFT JOIN products p ON o.product_id = p.id 
+                          WHERE o.user_id=? ORDER BY o.id DESC LIMIT 50", [$user['id']]);
     json_response($list);
 }

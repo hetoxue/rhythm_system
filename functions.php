@@ -185,3 +185,19 @@ function verify_password(string $password, string $hash): bool
     return password_verify($password, $hash);
 }
 
+/**
+ * 生成随机字符串
+ */
+function generate_random_string(int $length = 32): string
+{
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[random_int(0, $charactersLength - 1)];
+    }
+    
+    return $randomString;
+}
+
